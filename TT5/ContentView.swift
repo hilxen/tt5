@@ -7,55 +7,258 @@
 
 import SwiftUI
 import SwiftData
+import TwitchIRC
+import PopupView
+import SwipeActions
 
-struct ContentView: View {
+class Model: ObservableObject{
+    @Published var list = [Item]()
+    @Published var toasterText: String = ""
+    @Published var showingToaster: Bool = false
+    @Published var timeRemaining: Int = 5
+}
+
+struct ContentView: View, TwitchIRCDelegate {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Query private var settings: [Settings]
+    @Query private var nicks: [Nick]
+    @ObservedObject private var twitchIRC = TwitchIRC()
+    @State private var showSettings = false
+    @State private var scale = 18.0
+    @State private var vibrate: Bool = false
+    
+    @ObservedObject private var model = Model()
 
+    
+    let audioManager: AudioManager = AudioManager.shared
+    let maxMessages: Int = 20
+
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    init() {
+        twitchIRC.delegate = self
+    }
+    
+    func initSettings() {
+        if settings.isEmpty {
+            modelContext.insert(Settings(channel: "", volume: 5, defaultMuted: false))
+            try! modelContext.save()
+        }
+    }
+    
+    func onAppear() {
+        initSettings()
+        if twitchIRC.isConnected() && twitchIRC.channel != settings.first!.channel {
+            twitchIRC.join(channel: settings.first!.channel)
+        }
+        audioManager.setVolume(settings.first!.volume)
+    }
+    
+    func didBecomeActiveNotification() {
+        initSettings()
+        twitchIRC.channel = settings.first!.channel
+        twitchIRC.connect()
+        if settings.first!.channel.isEmpty {
+            showSettings = true
+        }
+    }
+    
+    func didEnterBackgroundNotification() {
+        twitchIRC.disconnect()
+    }
+    
+    func onMessage(pm: PrivateMessage) {
+        DispatchQueue.main.async {
+            addItem(nick: pm.userLogin, text: pm.message, color: pm.color)
+        }
+    }
+    
+    func onNotification(text: String) {
+        DispatchQueue.main.async {
+            addItem(nick: "", text: text)
+        }
+    }
+    
+    func toggleMuted(item: Item) {
+        if let index = nicks.firstIndex(where: {$0.nick == item.nick}) {
+            modelContext.delete(nicks[index])
+        } else {
+            modelContext.insert(Nick(nick: item.nick, muted: !settings.first!.defaultMuted))
+        }
+        try! modelContext.save()
+    }
+    
+    func isMuted(item: Item) -> Bool {
+        if let index = nicks.firstIndex(where: {$0.nick == item.nick}) {
+            return nicks[index].muted
+        } else {
+            return settings.first!.defaultMuted
+        }
+    }
+    
+    func addItem(nick: String, text: String, color: String = "#000000") {
+        print("addItem model.list.count=\(model.list.count)")
+        let item = Item(nick: nick, message: text, color: color)
+        model.list.append(item)
+        let bots = ["", "nightbot", "moobot"]  // move to settings
+        if !bots.contains(nick.lowercased()) && !isMuted(item: item) {
+            playText(nick: nick, text: text)
+            model.toasterText = nick
+            model.showingToaster = true
+            model.timeRemaining = 5
+        }
+        if model.list.count > maxMessages {
+            model.list.removeFirst()
+        }
+    }
+    
+    func playText(nick: String, text: String) {
+        let textEncoded = text.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        let url = "https://ancq5cs6vo5xysowyp6qttq2he0aexqb.lambda-url.us-west-1.on.aws/"
+        + "?language-code=ru-RU"
+        + "&voice-id=Tatyana"
+        + "&username=\(nick)"
+        + "&text=\(textEncoded)"
+        audioManager.startAudio(url: url)
+    }
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+        NavigationStack {
+            ZStack {
+                ScrollViewReader { scrollView in
+                    ScrollView(.vertical) {
+                        LazyVStack {
+                            ForEach(Array(model.list.enumerated()), id: \.offset) { index, item in
+                                HStack {
+                                    let icon = isMuted(item: item) != settings.first!.defaultMuted
+                                            ? (isMuted(item: item) ? "speaker.slash": "speaker") : ""
+                                    if icon != "" {
+                                        Image(systemName: icon)
+                                    }
+                                    Text(item.nick).foregroundStyle(item.getColor()).bold()
+                                        .onLongPressGesture {
+                                            toggleMuted(item: item)
+                                            vibrate.toggle()
+                                        }
+                                        .sensoryFeedback(.success, trigger: vibrate)
+                                    Spacer()
+                                    Text(item.message)
+                                        .onTapGesture {
+                                            playText(nick: item.nick, text: item.message)
+                                            vibrate.toggle()
+                                        }
+                                        .sensoryFeedback(.success, trigger: vibrate)
+                                }
+                                .font(.system(size: scale))
+                                .cornerRadius(8)
+                                .padding([.bottom, .top], 5)
+//                                .addFullSwipeAction(menu: .slided,
+//                                                    swipeColor: .white) {
+//                                    Leading {
+//                                        Button {
+//                                            print("edge: .leading")
+//                                        } label: {
+//                                            Label("Unmute", systemImage: "speaker")
+//                                        }
+//                                        .padding([.all], 5)
+//                                    }
+//                                    Trailing {
+//                                        Button {
+//                                            print("edge: .trailing")
+//                                        } label: {
+//                                            Label("Mute", systemImage: "speaker.slash")
+//                                        }
+//                                        .padding([.all], 5)
+//                                    }
+//                                } action: {
+//                                }
+                            }
+                        }
+                    }
+                    .padding([.all], 10)
+                    .onChange(of: model.list, {_, _ in
+                        DispatchQueue.main.async {
+                            if !model.list.isEmpty {
+                                withAnimation {
+                                    scrollView.scrollTo(model.list.endIndex - 1, anchor: .bottom)
+                                }
+                            }
+                        }
+                    })
+                    .onAppear {
+                        onAppear()
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification))
+                    { _ in didBecomeActiveNotification()}
+                        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification))
+                    { _ in didEnterBackgroundNotification()}
+                }
+            }.popup(isPresented: $model.showingToaster) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 20)
+                            .inset(by: 5) // inset value should be same as lineWidth in .stroke
+                            .stroke(.gray, lineWidth: 5)
+                            .frame(height: 100)
+                            .opacity(100.0)
+                            .background(Color.white)
+                    Text(model.toasterText).font(.system(size: 50))
+                        .foregroundStyle(Color.purple).bold()
+                }.onReceive(timer) { _ in
+                    if model.timeRemaining > 0 {
+                        model.timeRemaining -= 1
+                    } else {
+                        model.showingToaster = false
                     }
                 }
-                .onDelete(perform: deleteItems)
+            } customize: {
+                $0
+                    .type(.floater())
+                    .appearFrom(.topSlide)
+                    .position(.top)
+                    .animation(.spring())
+                    .closeOnTapOutside(true)
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+                ToolbarItemGroup(placement: .topBarLeading) {
+                    Button {
+                        if scale < 36 {
+                            scale += 2
+                        }
+                    } label: {
+                        Image(systemName: "textformat.size.larger")
+                    }
+                    Button {
+                        if scale > 16 {
+                            scale -= 2
+                        }
+                    } label: {
+                        Image(systemName: "textformat.size.smaller")
+                    }
                 }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
                     }
                 }
             }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            .navigationDestination(isPresented: $showSettings) {
+                SettingsView()
             }
         }
     }
 }
 
+
+    
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: Settings.self, inMemory: true)
 }
+
+//
+
+
