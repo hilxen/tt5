@@ -35,7 +35,6 @@ struct SettingsView: View {
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.black)
                     .padding(.horizontal, 20)
-                    .onChange(of: channel){ save() }
             }.padding(.vertical, 5)
             HStack {
                 Text("Volume")
@@ -59,6 +58,9 @@ struct SettingsView: View {
             HStack {
                 Toggle("Muted", isOn: $defaultMuted)
                     .padding(.trailing, 20)
+            }.padding(.vertical, 5)
+            HStack {
+                Button("Save") { save() }
             }.padding(.vertical, 5)
             Spacer()
         }.onAppear {

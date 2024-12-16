@@ -23,15 +23,16 @@ class TwitchIRC: WebSocketConnectionDelegate, ObservableObject {
 //    let maxMessages: Int = 100
     var channel: String = ""
     var delegate: TwitchIRCDelegate?
+    var connected: Bool = false
 
     var webSocketConnection: WebSocketConnection!
     
     func isConnected() -> Bool {
-        return webSocketConnection != nil
+        return webSocketConnection != nil && connected
     }
     
     func connect() {
-        if webSocketConnection == nil {
+        if webSocketConnection == nil || !connected {
             webSocketConnection = WebSocketTaskConnection(url: URL(string: "wss://irc-ws.chat.twitch.tv/")!)
             webSocketConnection.delegate = self
             webSocketConnection.connect()
@@ -44,6 +45,7 @@ class TwitchIRC: WebSocketConnectionDelegate, ObservableObject {
             webSocketConnection.delegate = nil
             webSocketConnection = nil
         }
+        connected = false
     }
 
     func onConnected(connection: WebSocketConnection) {
@@ -57,6 +59,7 @@ class TwitchIRC: WebSocketConnectionDelegate, ObservableObject {
         if !channel.isEmpty {
             join(channel: channel)
         }
+        connected = true
     }
     
     func onDisconnected(connection: WebSocketConnection, error: Error?) {
@@ -65,6 +68,7 @@ class TwitchIRC: WebSocketConnectionDelegate, ObservableObject {
         } else {
             print("Disconnected normally")
         }
+        connected = false
     }
     
     func onError(connection: WebSocketConnection, error: Error) {

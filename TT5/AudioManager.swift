@@ -24,7 +24,7 @@ final class AudioManager {
             try session.setCategory(
                 .playback,
                 mode: .default,
-                options: []
+                options: [.duckOthers]
             )
         } catch _ {}
         

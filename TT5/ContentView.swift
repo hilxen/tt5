@@ -10,12 +10,15 @@ import SwiftData
 import TwitchIRC
 import PopupView
 import SwipeActions
+import Combine
+
 
 class Model: ObservableObject{
     @Published var list = [Item]()
     @Published var toasterText: String = ""
     @Published var showingToaster: Bool = false
     @Published var timeRemaining: Int = 5
+    @Published var shouldRefresh = CurrentValueSubject<Bool, Never>(false)
 }
 
 struct ContentView: View, TwitchIRCDelegate {
@@ -57,6 +60,7 @@ struct ContentView: View, TwitchIRCDelegate {
     
     func didBecomeActiveNotification() {
         initSettings()
+        twitchIRC.disconnect()
         twitchIRC.channel = settings.first!.channel
         twitchIRC.connect()
         if settings.first!.channel.isEmpty {
@@ -65,7 +69,7 @@ struct ContentView: View, TwitchIRCDelegate {
     }
     
     func didEnterBackgroundNotification() {
-        twitchIRC.disconnect()
+        // twitchIRC.disconnect()
     }
     
     func onMessage(pm: PrivateMessage) {
@@ -125,6 +129,9 @@ struct ContentView: View, TwitchIRCDelegate {
     
     var body: some View {
         NavigationStack {
+            TwitchPlayerWebView(channel: settings.first!.channel, shouldRefresh: model.shouldRefresh)
+                .frame(height: 200)
+                .padding([.all], 5)
             ZStack {
                 ScrollViewReader { scrollView in
                     ScrollView(.vertical) {
@@ -238,6 +245,11 @@ struct ContentView: View, TwitchIRCDelegate {
                 }
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        model.shouldRefresh.send(true)
+                    } label: {
+                        Image(systemName: "arrow.trianglehead.clockwise")
+                    }
                     Button {
                         showSettings = true
                     } label: {
