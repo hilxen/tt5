@@ -21,6 +21,7 @@
 	<array>
 		<string>processing</string>
 		<string>fetch</string>
+		<string>audio</string>
 	</array>
 </dict>
 </plist>
