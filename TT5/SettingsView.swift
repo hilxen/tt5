@@ -14,6 +14,8 @@ struct SettingsView: View {
     @State private var volume: Int = 0
     @State private var channel: String = ""
     @State private var defaultMuted: Bool = false
+    let minVolume: Int = 1
+    let maxVolume: Int = 10
 
     func save() {
         settings.first!.channel = channel
@@ -40,7 +42,7 @@ struct SettingsView: View {
                 Text("Volume")
                 Spacer()
                 Button {
-                    if volume > 1 {
+                    if volume > minVolume {
                         volume -= 1
                     }
                 } label: {
@@ -48,7 +50,7 @@ struct SettingsView: View {
                 }
                 Text("\(volume)").padding(.horizontal, 20)
                 Button {
-                    if volume < 10 {
+                    if volume < maxVolume {
                         volume += 1
                     }
                 } label: {

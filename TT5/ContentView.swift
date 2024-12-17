@@ -11,6 +11,8 @@ import TwitchIRC
 import PopupView
 import SwipeActions
 import Combine
+import NaturalLanguage
+import AVFoundation
 
 
 class Model: ObservableObject{
@@ -29,14 +31,10 @@ struct ContentView: View, TwitchIRCDelegate {
     @State private var showSettings = false
     @State private var scale = 18.0
     @State private var vibrate: Bool = false
-    
     @ObservedObject private var model = Model()
 
-    
     let audioManager: AudioManager = AudioManager.shared
     let maxMessages: Int = 20
-
-    
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     init() {
@@ -56,6 +54,10 @@ struct ContentView: View, TwitchIRCDelegate {
             twitchIRC.join(channel: settings.first!.channel)
         }
         audioManager.setVolume(settings.first!.volume)
+        if settings.first!.channel.isEmpty {
+            showSettings = true
+        }
+        model.shouldRefresh.send(true)
     }
     
     func didBecomeActiveNotification() {
@@ -66,6 +68,7 @@ struct ContentView: View, TwitchIRCDelegate {
         if settings.first!.channel.isEmpty {
             showSettings = true
         }
+        model.shouldRefresh.send(true)
     }
     
     func didEnterBackgroundNotification() {
@@ -116,22 +119,26 @@ struct ContentView: View, TwitchIRCDelegate {
             model.list.removeFirst()
         }
     }
+
     
     func playText(nick: String, text: String) {
-        let textEncoded = text.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
-        let url = "https://ancq5cs6vo5xysowyp6qttq2he0aexqb.lambda-url.us-west-1.on.aws/"
-        + "?language-code=ru-RU"
-        + "&voice-id=Tatyana"
-        + "&username=\(nick)"
-        + "&text=\(textEncoded)"
-        audioManager.startAudio(url: url)
+        audioManager.textToSpeech(text: text)
+//        let textEncoded = text.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+//        let url = "https://ancq5cs6vo5xysowyp6qttq2he0aexqb.lambda-url.us-west-1.on.aws/"
+//        + "?language-code=ru-RU"
+//        + "&voice-id=Tatyana"
+//        + "&username=\(nick)"
+//        + "&text=\(textEncoded)"
+//        audioManager.startAudio(url: url)
     }
     
     var body: some View {
         NavigationStack {
-            TwitchPlayerWebView(channel: settings.first!.channel, shouldRefresh: model.shouldRefresh)
-                .frame(height: 200)
-                .padding([.all], 5)
+            if !settings.first!.channel.isEmpty {
+                TwitchPlayerWebView(shouldRefresh: model.shouldRefresh)
+                    .frame(height: 200)
+                    .padding([.all], 5)
+            }
             ZStack {
                 ScrollViewReader { scrollView in
                     ScrollView(.vertical) {
@@ -158,8 +165,7 @@ struct ContentView: View, TwitchIRCDelegate {
                                         .sensoryFeedback(.success, trigger: vibrate)
                                 }
                                 .font(.system(size: scale))
-                                .cornerRadius(8)
-                                .padding([.bottom, .top], 5)
+                                .padding([.bottom], 1)
 //                                .addFullSwipeAction(menu: .slided,
 //                                                    swipeColor: .white) {
 //                                    Leading {
