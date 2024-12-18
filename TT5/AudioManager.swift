@@ -42,7 +42,7 @@ final class AudioManager {
     private var player: AVQueuePlayer?
     private var session = AVAudioSession.sharedInstance()
     private var volume: Int = 5
-    let volumes: [Float] = [0, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64]
+    let volumes: [Float] = [0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32, 64]
     
     private init() {
         recognizer.languageConstraints = Array(languages.keys)

@@ -13,18 +13,21 @@ import SwiftData
 final class Settings {
     var channel: String
     var volume: Int
-    var defaultMuted: Bool
+    var muted: Bool
+    var rate: Float?
+    var pitch: Float?
+    var gender: String?
     
-    init(channel: String, volume: Int, defaultMuted: Bool) {
+    init(channel: String, volume: Int, muted: Bool) {
         self.channel = channel
         self.volume = volume
-        self.defaultMuted = defaultMuted
+        self.muted = muted
     }
     
     func set(_settings: Settings) {
         self.channel = _settings.channel
         self.volume = _settings.volume
-        self.defaultMuted = _settings.defaultMuted
+        self.muted = _settings.muted
     }
 }
 
@@ -33,6 +36,11 @@ final class Settings {
 final class Nick {
     var nick: String
     var muted: Bool
+    var pronunciation: String?
+    var volume: Int?
+    var rate: Float?
+    var pitch: Float?
+    var gender: String?
     
     init(nick: String, muted: Bool) {
         self.nick = nick

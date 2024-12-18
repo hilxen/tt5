@@ -43,7 +43,7 @@ struct ContentView: View, TwitchIRCDelegate {
     
     func initSettings() {
         if settings.isEmpty {
-            modelContext.insert(Settings(channel: "", volume: 5, defaultMuted: false))
+            modelContext.insert(Settings(channel: "", volume: 5, muted: false))
             try! modelContext.save()
         }
     }
@@ -91,7 +91,7 @@ struct ContentView: View, TwitchIRCDelegate {
         if let index = nicks.firstIndex(where: {$0.nick == item.nick}) {
             modelContext.delete(nicks[index])
         } else {
-            modelContext.insert(Nick(nick: item.nick, muted: !settings.first!.defaultMuted))
+            modelContext.insert(Nick(nick: item.nick, muted: !settings.first!.muted))
         }
         try! modelContext.save()
     }
@@ -100,7 +100,7 @@ struct ContentView: View, TwitchIRCDelegate {
         if let index = nicks.firstIndex(where: {$0.nick == item.nick}) {
             return nicks[index].muted
         } else {
-            return settings.first!.defaultMuted
+            return settings.first!.muted
         }
     }
     
@@ -134,7 +134,7 @@ struct ContentView: View, TwitchIRCDelegate {
     
     var body: some View {
         NavigationStack {
-            if !settings.first!.channel.isEmpty {
+            if !settings.isEmpty && !settings.first!.channel.isEmpty {
                 TwitchPlayerWebView(shouldRefresh: model.shouldRefresh)
                     .frame(height: 200)
                     .padding([.all], 5)
@@ -145,7 +145,7 @@ struct ContentView: View, TwitchIRCDelegate {
                         LazyVStack {
                             ForEach(Array(model.list.enumerated()), id: \.offset) { index, item in
                                 HStack {
-                                    let icon = isMuted(item: item) != settings.first!.defaultMuted
+                                    let icon = isMuted(item: item) != settings.first!.muted
                                             ? (isMuted(item: item) ? "speaker.slash": "speaker") : ""
                                     if icon != "" {
                                         Image(systemName: icon)

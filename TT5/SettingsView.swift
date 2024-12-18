@@ -13,14 +13,14 @@ struct SettingsView: View {
     @Query private var settings: [Settings]
     @State private var volume: Int = 0
     @State private var channel: String = ""
-    @State private var defaultMuted: Bool = false
-    let minVolume: Int = 1
+    @State private var muted: Bool = false
+    let minVolume: Int = 0
     let maxVolume: Int = 10
 
     func save() {
         settings.first!.channel = channel
         settings.first!.volume = volume
-        settings.first!.defaultMuted = defaultMuted
+        settings.first!.muted = muted
         try! modelContext.save()
     }
     
@@ -58,7 +58,7 @@ struct SettingsView: View {
                 }.padding(.trailing, 20)
             }.padding(.vertical, 5)
             HStack {
-                Toggle("Muted", isOn: $defaultMuted)
+                Toggle("Muted", isOn: $muted)
                     .padding(.trailing, 20)
             }.padding(.vertical, 5)
             HStack {
@@ -68,7 +68,7 @@ struct SettingsView: View {
         }.onAppear {
             channel = settings.first!.channel
             volume = settings.first!.volume
-            defaultMuted = settings.first!.defaultMuted
+            muted = settings.first!.muted
         }.onDisappear {
             save()
         }
