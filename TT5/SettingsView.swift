@@ -14,15 +14,11 @@ struct SettingsView: View {
     @State private var volume: Int = 0
     @State private var channel: String = ""
     @State private var muted: Bool = false
+    @State var rate: Rate = .normal
+    @State var pitch: Pitch = .normal
+    @State var voice: Voice = .female
     let minVolume: Int = 0
     let maxVolume: Int = 10
-
-    func save() {
-        settings.first!.channel = channel
-        settings.first!.volume = volume
-        settings.first!.muted = muted
-        try! modelContext.save()
-    }
     
     var body: some View {
         VStack(
@@ -30,7 +26,7 @@ struct SettingsView: View {
             spacing: 10
         ) {
             HStack {
-                Text("Join channel")
+                Text("Channel")
                 Spacer()
                 TextField("Channel Name", text: $channel)
                     .padding(5)
@@ -62,6 +58,38 @@ struct SettingsView: View {
                     .padding(.trailing, 20)
             }.padding(.vertical, 5)
             HStack {
+                Text("Voice")
+                Spacer()
+                Picker("Voice", selection: $voice) {
+                    ForEach(Voice.allCases, id: \.self) {
+                        Text($0.description())
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            HStack {
+                Text("Voice Pitch")
+                Spacer()
+                Picker("Pitch", selection: $pitch) {
+                    ForEach(Pitch.allCases, id: \.self) {
+                        Text($0.description())
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            HStack {
+                Text("Speech Rate")
+                Spacer()
+                Picker("Rate", selection: $rate) {
+                    ForEach(Rate.allCases, id: \.self) {
+                        Text($0.description())
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            
+            
+            HStack {
                 Button("Save") { save() }
             }.padding(.vertical, 5)
             Spacer()
@@ -69,9 +97,23 @@ struct SettingsView: View {
             channel = settings.first!.channel
             volume = settings.first!.volume
             muted = settings.first!.muted
+            rate = Rate.allCases.first(where: {$0.rawValue == settings.first!.rate}) ?? .normal
+            pitch = Pitch.allCases.first(where: {$0.rawValue == settings.first!.pitch}) ?? .normal
+            voice = Voice.allCases.first(where: {$0.rawValue == settings.first!.voice}) ?? .female
         }.onDisappear {
             save()
         }
         .padding(20)
     }
+    
+    func save() {
+        settings.first!.channel = channel
+        settings.first!.volume = volume
+        settings.first!.muted = muted
+        self.settings.first!.rate = rate.rawValue
+        self.settings.first!.pitch = pitch.rawValue
+        self.settings.first!.voice = voice.rawValue 
+        try! modelContext.save()
+    }
+    
 }

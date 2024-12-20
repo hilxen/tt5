@@ -15,11 +15,8 @@ import NaturalLanguage
 import AVFoundation
 
 
-class Model: ObservableObject{
+class Model: ObservableObject {
     @Published var list = [Item]()
-    @Published var toasterText: String = ""
-    @Published var showingToaster: Bool = false
-    @Published var timeRemaining: Int = 5
     @Published var shouldRefresh = CurrentValueSubject<Bool, Never>(false)
 }
 
@@ -32,8 +29,7 @@ struct ContentView: View, TwitchIRCDelegate {
     @State private var scale = 18.0
     @State private var vibrate: Bool = false
     @ObservedObject private var model = Model()
-
-    let audioManager: AudioManager = AudioManager.shared
+    @ObservedObject private var audioManager: AudioManager = AudioManager.shared
     let maxMessages: Int = 20
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -43,18 +39,18 @@ struct ContentView: View, TwitchIRCDelegate {
     
     func initSettings() {
         if settings.isEmpty {
-            modelContext.insert(Settings(channel: "", volume: 5, muted: false))
+            modelContext.insert(Settings(channel: "", volume: 5, muted: false, rate: .normal, pitch: .normal, voice: .female))
             try! modelContext.save()
         }
     }
     
     func onAppear() {
         initSettings()
-        if twitchIRC.isConnected() && twitchIRC.channel != settings.first!.channel {
-            twitchIRC.join(channel: settings.first!.channel)
+        let _settings = settings.first!
+        if twitchIRC.isConnected() && twitchIRC.channel != _settings.channel {
+            twitchIRC.join(channel: _settings.channel)
         }
-        audioManager.setVolume(settings.first!.volume)
-        if settings.first!.channel.isEmpty {
+        if _settings.channel.isEmpty {
             showSettings = true
         }
         model.shouldRefresh.send(true)
@@ -62,10 +58,11 @@ struct ContentView: View, TwitchIRCDelegate {
     
     func didBecomeActiveNotification() {
         initSettings()
+        let _settings = settings.first!
         twitchIRC.disconnect()
-        twitchIRC.channel = settings.first!.channel
+        twitchIRC.channel = _settings.channel
         twitchIRC.connect()
-        if settings.first!.channel.isEmpty {
+        if _settings.channel.isEmpty {
             showSettings = true
         }
         model.shouldRefresh.send(true)
@@ -77,43 +74,50 @@ struct ContentView: View, TwitchIRCDelegate {
     
     func onMessage(pm: PrivateMessage) {
         DispatchQueue.main.async {
-            addItem(nick: pm.userLogin, text: pm.message, color: pm.color)
+            let nick = getNick(name: pm.userLogin)
+            nick.color = pm.color
+            nick.vip = pm.isVIP
+            nick.subscriber = pm.isSubscriber
+            nick.mod = pm.isMod
+            nick.broadcaster = pm.isBroadcaster
+            addItem(nick: nick, text: pm.message, messageId: pm.messageId)
         }
     }
     
     func onNotification(text: String) {
-        DispatchQueue.main.async {
-            addItem(nick: "", text: text)
-        }
+//        DispatchQueue.main.async {
+//            addItem(nick: nil, text: text)
+//        }
     }
     
-    func toggleMuted(item: Item) {
-        if let index = nicks.firstIndex(where: {$0.nick == item.nick}) {
-            modelContext.delete(nicks[index])
+    
+    func getNick(name: String) -> Nick {
+        print("get nick \(name)")
+        let _settings = settings.first!
+        if let nick = nicks.first(where: {$0.name == name}) {
+            nick.volume = nick.volume ?? Volume.normal.rawValue
+            nick.rate = nick.rate ?? _settings.rate
+            nick.pitch = nick.pitch ?? _settings.pitch
+            nick.voice = nick.voice ?? _settings.voice
+            return nick
         } else {
-            modelContext.insert(Nick(nick: item.nick, muted: !settings.first!.muted))
-        }
-        try! modelContext.save()
-    }
-    
-    func isMuted(item: Item) -> Bool {
-        if let index = nicks.firstIndex(where: {$0.nick == item.nick}) {
-            return nicks[index].muted
-        } else {
-            return settings.first!.muted
+            let nick = Nick(name: name, muted: _settings.muted)
+            nick.volume = Volume.normal.rawValue
+            nick.rate = _settings.rate
+            nick.pitch = _settings.pitch
+            nick.voice = _settings.voice
+            return nick
         }
     }
     
-    func addItem(nick: String, text: String, color: String = "#000000") {
+    
+    func addItem(nick: Nick, text: String, messageId: String) {
         print("addItem model.list.count=\(model.list.count)")
-        let item = Item(nick: nick, message: text, color: color)
+        let item = Item(nick: nick, message: text)
         model.list.append(item)
-        let bots = ["", "nightbot", "moobot"]  // move to settings
-        if !bots.contains(nick.lowercased()) && !isMuted(item: item) {
-            playText(nick: nick, text: text)
-            model.toasterText = nick
-            model.showingToaster = true
-            model.timeRemaining = 5
+        let bots = ["", "nightbot", "moobot", "streamelements"]  // move to settings
+        if !bots.contains(nick.name.lowercased()) && !nick.muted {
+            playText(nick: nick, text: text, messageId: messageId)
         }
         if model.list.count > maxMessages {
             model.list.removeFirst()
@@ -121,8 +125,8 @@ struct ContentView: View, TwitchIRCDelegate {
     }
 
     
-    func playText(nick: String, text: String) {
-        audioManager.textToSpeech(text: text)
+    func playText(nick: Nick, text: String, messageId: String) {
+        audioManager.textToSpeech(settings: settings.first!, nicks: nicks, nick: nick, text: text, messageId: messageId)
 //        let textEncoded = text.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
 //        let url = "https://ancq5cs6vo5xysowyp6qttq2he0aexqb.lambda-url.us-west-1.on.aws/"
 //        + "?language-code=ru-RU"
@@ -145,47 +149,24 @@ struct ContentView: View, TwitchIRCDelegate {
                         LazyVStack {
                             ForEach(Array(model.list.enumerated()), id: \.offset) { index, item in
                                 HStack {
-                                    let icon = isMuted(item: item) != settings.first!.muted
-                                            ? (isMuted(item: item) ? "speaker.slash": "speaker") : ""
+                                    let icon = item.nick.muted != settings.first!.muted
+                                        ? (item.nick.muted ? "speaker.slash": "speaker") : ""
                                     if icon != "" {
                                         Image(systemName: icon)
                                     }
-                                    Text(item.nick).foregroundStyle(item.getColor()).bold()
-                                        .onLongPressGesture {
-                                            toggleMuted(item: item)
-                                            vibrate.toggle()
-                                        }
-                                        .sensoryFeedback(.success, trigger: vibrate)
+                                    NavigationLink(destination: NickView(nick: item.nick)) {
+                                        Text(item.nick.name).foregroundStyle(item.nick.getColor()).bold()
+                                    }
                                     Spacer()
                                     Text(item.message)
                                         .onTapGesture {
-                                            playText(nick: item.nick, text: item.message)
+                                            playText(nick: item.nick, text: item.message, messageId: "")
                                             vibrate.toggle()
                                         }
                                         .sensoryFeedback(.success, trigger: vibrate)
                                 }
                                 .font(.system(size: scale))
                                 .padding([.bottom], 1)
-//                                .addFullSwipeAction(menu: .slided,
-//                                                    swipeColor: .white) {
-//                                    Leading {
-//                                        Button {
-//                                            print("edge: .leading")
-//                                        } label: {
-//                                            Label("Unmute", systemImage: "speaker")
-//                                        }
-//                                        .padding([.all], 5)
-//                                    }
-//                                    Trailing {
-//                                        Button {
-//                                            print("edge: .trailing")
-//                                        } label: {
-//                                            Label("Mute", systemImage: "speaker.slash")
-//                                        }
-//                                        .padding([.all], 5)
-//                                    }
-//                                } action: {
-//                                }
                             }
                         }
                     }
@@ -207,21 +188,26 @@ struct ContentView: View, TwitchIRCDelegate {
                         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification))
                     { _ in didEnterBackgroundNotification()}
                 }
-            }.popup(isPresented: $model.showingToaster) {
+            }.popup(isPresented: $audioManager.speakerActive) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 20)
+                    if let speakerNick = audioManager.speakerNick {
+                        RoundedRectangle(cornerRadius: 20)
                             .inset(by: 5) // inset value should be same as lineWidth in .stroke
                             .stroke(.gray, lineWidth: 5)
                             .frame(height: 100)
                             .opacity(100.0)
                             .background(Color.white)
-                    Text(model.toasterText).font(.system(size: 50))
-                        .foregroundStyle(Color.purple).bold()
+                        NavigationLink(destination: NickView(nick: speakerNick)) {
+                            Text(speakerNick.name).font(.system(size: 50))
+                                .foregroundStyle(speakerNick.getColor()).bold()
+                        }
+                    }
                 }.onReceive(timer) { _ in
-                    if model.timeRemaining > 0 {
-                        model.timeRemaining -= 1
-                    } else {
-                        model.showingToaster = false
+                    if audioManager.speakerCountdown > 0 {
+                        audioManager.speakerCountdown -= 1
+                    }
+                    if audioManager.speakerCountdown == 0 {
+                        audioManager.speakerActive = false
                     }
                 }
             } customize: {

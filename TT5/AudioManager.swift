@@ -9,11 +9,34 @@ import Foundation
 import AVFoundation
 import NaturalLanguage
 
+extension String {
+    func escapedForXML() -> String {
+        let generalEntities = [
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;",
+            "'": "&apos;"
+        ]
+        
+        var result = self
+        for (unescaped, escaped) in generalEntities {
+            result = result.replacingOccurrences(of: unescaped, with: escaped)
+        }
+        return result
+    }
+}
 
-final class AudioManager {
-    static let shared = AudioManager()
+
+class SpeechTools {
     let recognizer = NLLanguageRecognizer()
     let synthesizer = AVSpeechSynthesizer()
+}
+
+
+final class AudioManager: NSObject, ObservableObject {
+    static let shared = AudioManager()
+    let speechTools = SpeechTools()
     let languages: [NLLanguage: String] = [
             .english: "en-US",
             .russian: "ru-RU",
@@ -23,12 +46,12 @@ final class AudioManager {
 //            .spanish: "es-ES"
     ]
     let voices = [
-        "de": "com.apple.ttsbundle.siri_Helena_de-DE_compact",
-        "fr": "com.apple.ttsbundle.siri_Marie_fr-FR_compact",
-        "it": "com.apple.voice.compact.it-IT.Alice",
-        "en": "com.apple.voice.compact.en-US.Samantha",
-        "es": "com.apple.voice.compact.es-ES.Monica",
-        "ru": "com.apple.voice.compact.ru-RU.Milena"
+        "de": ["female": "com.apple.ttsbundle.siri_Helena_de-DE_compact", "male": "com.apple.ttsbundle.siri_Martin_de-DE_compact"],
+        "fr": ["female": "com.apple.ttsbundle.siri_Marie_fr-FR_compact", "male": "com.apple.voice.compact.fr-FR.Thomas"],
+        "it": ["female": "com.apple.voice.compact.it-IT.Alice", "male": "com.apple.eloquence.it-IT.Rocko"],
+        "en": ["female": "com.apple.voice.compact.en-US.Samantha", "male": "com.apple.speech.synthesis.voice.Fred"],
+        "es": ["female": "com.apple.voice.compact.es-ES.Monica", "male": "com.apple.eloquence.es-ES.Rocko"],
+        "ru": ["female": "com.apple.voice.compact.ru-RU.Milena", "male": "com.apple.voice.compact.ru-RU.Milena"],
     ]
 //    it-IT female com.apple.voice.compact.it-IT.Alice
 //    fr-FR female com.apple.ttsbundle.siri_Marie_fr-FR_compact
@@ -42,14 +65,22 @@ final class AudioManager {
     private var player: AVQueuePlayer?
     private var session = AVAudioSession.sharedInstance()
     private var volume: Int = 5
-    let volumes: [Float] = [0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32, 64]
+    let volumes: [Float] = [0.005, 0.02, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32, 64]
+    let ssmlVolumes: [String] = ["silent", "-36dB", "-27dB", "-18dB", "-9dB", "+0dB", "+9dB", "+18dB", "+27dB", "+36dB", "+45dB"]
+
+    var utterances: [AVSpeechUtterance: Nick] = [:]
+    @Published var speakerNick: Nick?
+    @Published var speakerActive: Bool = false
+    @Published var speakerCountdown: Int = -1
     
-    private init() {
-        recognizer.languageConstraints = Array(languages.keys)
+    override init() {
+        super.init()
+        speechTools.synthesizer.delegate = self
+        speechTools.recognizer.languageConstraints = Array(languages.keys)
         let supportedVoices = AVSpeechSynthesisVoice.speechVoices() //list of supported voices
-        for (language, locale) in languages {
+        for (_, locale) in languages {
             for supportedVoice in supportedVoices {
-                if supportedVoice.language == locale && supportedVoice.gender == .female {
+                if supportedVoice.language == locale /* && (supportedVoice.gender == .female || supportedVoice.gender == .male) */ {
                     let gender = supportedVoice.gender == .female ? "female" : supportedVoice.gender == .male ? "male" : "unknown"
                     print(locale, gender, supportedVoice.identifier)
                 }
@@ -76,25 +107,110 @@ final class AudioManager {
         } catch _ {}
     }
     
-    func setVolume(_ volume: Int) {
-        self.volume = volume
+    func replaceListedCharactersWithSpaces(_ text: String, charactersToReplace: CharacterSet) -> String {
+        return text.unicodeScalars.map { charactersToReplace.contains($0) ? UnicodeScalar(32)! : $0 }.map {
+            "\($0)"
+        }.joined()
     }
     
-    func textToSpeech(text: String) {
+    func removeExtraRepetitions(_ text: String) -> String {
+        let words = text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+        var result = [String]()
+        var currentStreak = [String]()
+        
+        for word in words {
+            if let last = currentStreak.last, last == word {
+                if currentStreak.count < 2 {
+                    currentStreak.append(word)
+                }
+            } else {
+                if !currentStreak.isEmpty {
+                    result.append(contentsOf: currentStreak.prefix(2))
+                }
+                currentStreak = [word]
+            }
+        }
+        
+        // Handle the last streak
+        if !currentStreak.isEmpty {
+            result.append(contentsOf: currentStreak.prefix(2))
+        }
+        
+        return result.joined(separator: " ")
+    }
+    
+    func findPronunciation(name: String, nicks:[Nick]) -> String? {
+        let pronunciation = nicks.first(where: { $0.name == name.dropFirst() })?.pronunciation ?? ""
+        return !pronunciation.isEmpty ? "@\(pronunciation)": nil
+    }
+    
+    func replaceAtWords(text: String, nicks: [Nick]) -> String {
+        var result = text
+        var ranges = [Range<String.Index>]()
+        var currentIndex = text.startIndex
+        
+        while currentIndex < text.endIndex {
+            let start = currentIndex
+            if text[currentIndex] == "@" {
+                // Move to next character to check if it's part of a word
+                currentIndex = text.index(after: currentIndex)
+                while currentIndex < text.endIndex && isWordCharacter(text[currentIndex]) {
+                    currentIndex = text.index(after: currentIndex)
+                }
+                let end = currentIndex
+                ranges.append(start..<end)
+            } else {
+                // Skip to the next non-space character if not starting with @
+                currentIndex = text.index(after: currentIndex)
+            }
+            
+            // Move to the next potential word start
+            while currentIndex < text.endIndex && !isWordCharacter(text[currentIndex]) && text[currentIndex] != "@" {
+                currentIndex = text.index(after: currentIndex)
+            }
+        }
+        
+        // Replace @words in reverse order to avoid index shifting
+        for range in ranges.reversed() {
+            let word = String(text[range])
+            if let replacement = findPronunciation(name: word, nicks: nicks) {
+                result.replaceSubrange(range, with: replacement)
+            }
+        }
+        
+        return result
+    }
+
+    func isWordCharacter(_ char: Character) -> Bool {
+        return char.isLetter || char.isNumber || char == "_"
+    }
+
+    func textToSpeech(settings: Settings, nicks: [Nick], nick: Nick, text: String, messageId: String) {
         activateSession()
-        let utterance = AVSpeechUtterance(string: text)
-        // Configure the utterance.
-        //utterance.rate = 0.5
-        //utterance.pitchMultiplier = 0.5
-        //utterance.postUtteranceDelay = 0.2
-        utterance.volume = volumes[volume]
+        
+        let mappedText = replaceAtWords(text: text, nicks: nicks)
+        
+        let charactersToReplace = CharacterSet(charactersIn: "[]{}/|\\~^&;")
+        let cleanedText = removeExtraRepetitions(
+            replaceListedCharactersWithSpaces(mappedText, charactersToReplace: charactersToReplace))
+        
+        var volumeIndex = settings.volume + nick.volume!
+        if volumeIndex < 0 { volumeIndex = 0 }
+        else if volumeIndex > volumes.endIndex { volumeIndex = volumes.endIndex }
 
-        recognizer.processString(text)
-        let language = recognizer.dominantLanguage?.rawValue ?? "en"
-        let voiceId = voices[language]
+        let ssmlRate = Rate.fromRawValue(rawValue: nick.rate!).ssml()
+        let ssmlPitch = Pitch.fromRawValue(rawValue: nick.pitch!).ssml()
+        let ssmlVolume = ssmlVolumes[volumeIndex]
+        let utterance = AVSpeechUtterance(ssmlRepresentation: "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlPitch)'>\(cleanedText.escapedForXML())</prosody></speak>")!
+        utterance.prefersAssistiveTechnologySettings = true
+        //utterance.volume = volumes[volumeIndex]
+        speechTools.recognizer.processString(cleanedText)
+        let language = speechTools.recognizer.dominantLanguage?.rawValue ?? "en"
+        let voiceId = voices[language]![nick.voice!]
         utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId!)
-        synthesizer.speak(utterance)
-
+        utterances[utterance] = nick
+        print("queued speech", nick.name, nick.voice!, "volume", ssmlVolume, "rate", ssmlRate, "pitch", ssmlPitch, "queue size", utterances.count)
+        speechTools.synthesizer.speak(utterance)
     }
     
     func startAudio(url: String) {
@@ -107,7 +223,7 @@ final class AudioManager {
             player = AVQueuePlayer(playerItem: playerItem)
         }
         if let player = player {
-            player.volume = 10.0 * Float(volume)
+            player.volume = volumes[volume]
             player.play()
         }
     }
@@ -118,5 +234,21 @@ final class AudioManager {
         } catch let error as NSError {
             print("Failed to deactivate audio session: \(error.localizedDescription)")
         }
+    }
+}
+
+extension AudioManager: AVSpeechSynthesizerDelegate {
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
+        let nick = utterances[utterance]!
+        speakerNick = nick
+        speakerActive = true
+        speakerCountdown = -1
+        print("started speaking", nick.name, "queue size", utterances.count)
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        let nick = utterances.removeValue(forKey: utterance)!
+        speakerCountdown = 2
+        print("stopped speaking", nick.name, "queue size", utterances.count)
     }
 }
