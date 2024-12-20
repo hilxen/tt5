@@ -32,12 +32,17 @@ struct NickView: View {
         ) {
             HStack {
                 Text(nick.name).bold().font(.title)
+                Spacer()
             }.padding(.vertical, 5)
             HStack {
-                Toggle("Muted", isOn: $muted)
+                Image(systemName: "speaker.slash.fill")
+                Text("Muted")
+                Spacer()
+                Toggle("", isOn: $muted)
                     .padding(.trailing, 20)
             }
             HStack {
+                Image(systemName: "person.wave.2.fill")
                 Text("Pronounce as")
                 Spacer()
                 TextField("Pronunciation", text: $pronunciation)
@@ -52,16 +57,14 @@ struct NickView: View {
             }
             VStack {
                 HStack {
-                    HStack {
-                        Text("Volume")
-                        Spacer()
-                        Picker("Volume", selection: $volume) {
-                            ForEach(Rate.allCases, id: \.self) {
-                                Text($0.description())
-                            }
+                    Text("Volume")
+                    Spacer()
+                    Picker("Volume", selection: $volume) {
+                        ForEach(Volume.allCases, id: \.self) {
+                            Text($0.description())
                         }
-                        .pickerStyle(.menu)
                     }
+                    .pickerStyle(.menu)
                 }
                 HStack {
                     Text("Voice")
@@ -106,7 +109,9 @@ struct NickView: View {
             self.voice = Voice.allCases.first(where: {$0.rawValue == nick.voice}) ?? .female
         }.onDisappear {
             save()
-        }.padding(20)
+        }
+        .padding(20)
+        .navigationTitle("Edit Nick")
     }
     
     func save() {

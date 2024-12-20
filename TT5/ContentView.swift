@@ -17,6 +17,7 @@ import AVFoundation
 
 class Model: ObservableObject {
     @Published var list = [Item]()
+    @Published var newNicks = [Nick]()
     @Published var shouldRefresh = CurrentValueSubject<Bool, Never>(false)
 }
 
@@ -26,10 +27,13 @@ struct ContentView: View, TwitchIRCDelegate {
     @Query private var nicks: [Nick]
     @ObservedObject private var twitchIRC = TwitchIRC()
     @State private var showSettings = false
+    @State private var showHelp = false
     @State private var scale = 18.0
     @State private var vibrate: Bool = false
     @ObservedObject private var model = Model()
     @ObservedObject private var audioManager: AudioManager = AudioManager.shared
+    //@State private var simpleModelActor: SimpleModelActor!
+    
     let maxMessages: Int = 20
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -54,6 +58,7 @@ struct ContentView: View, TwitchIRCDelegate {
             showSettings = true
         }
         model.shouldRefresh.send(true)
+        //simpleModelActor = SimpleModelActor(modelContainer: modelContext.container)
     }
     
     func didBecomeActiveNotification() {
@@ -106,10 +111,23 @@ struct ContentView: View, TwitchIRCDelegate {
             nick.rate = _settings.rate
             nick.pitch = _settings.pitch
             nick.voice = _settings.voice
+            model.newNicks.append(Nick(name: name, muted: _settings.muted))
+//            if simpleModelActor != nil {
+//                Task {
+//                    await simpleModelActor.insert(nick: Nick(name: name, muted: _settings.muted))
+//                }
+//            }
             return nick
         }
     }
     
+    func saveNewNicks() {
+        for nick in model.newNicks {
+            modelContext.insert(nick)
+            print("Saved new nick", nick.name)
+        }
+        model.newNicks.removeAll()
+    }
     
     func addItem(nick: Nick, text: String, messageId: String) {
         print("addItem model.list.count=\(model.list.count)")
@@ -148,14 +166,28 @@ struct ContentView: View, TwitchIRCDelegate {
                     ScrollView(.vertical) {
                         LazyVStack {
                             ForEach(Array(model.list.enumerated()), id: \.offset) { index, item in
-                                HStack {
+                                HStack(alignment: .top, spacing: 0) {
                                     let icon = item.nick.muted != settings.first!.muted
                                         ? (item.nick.muted ? "speaker.slash": "speaker") : ""
                                     if icon != "" {
                                         Image(systemName: icon)
                                     }
                                     NavigationLink(destination: NickView(nick: item.nick)) {
-                                        Text(item.nick.name).foregroundStyle(item.nick.getColor()).bold()
+                                        HStack(spacing: 1) {
+                                            if item.nick.mod ?? false {
+                                                Image("mod").resizable().scaledToFit().frame(height: scale * 0.8)
+                                            }
+                                            if item.nick.subscriber ?? false {
+                                                Image("sub").resizable().scaledToFit().frame(height: scale * 0.8)
+                                            }
+                                            if item.nick.vip ?? false {
+                                                Image("vip").resizable().scaledToFit().frame(height: scale * 0.8)
+                                            }
+                                            if item.nick.broadcaster ?? false {
+                                                Image("own").resizable().scaledToFit().frame(height: scale * 0.8)
+                                            }
+                                            Text(item.nick.name).foregroundStyle(item.nick.getColor()).bold().padding(.leading, 2)
+                                        }
                                     }
                                     Spacer()
                                     Text(item.message)
@@ -199,7 +231,11 @@ struct ContentView: View, TwitchIRCDelegate {
                             .background(Color.white)
                         NavigationLink(destination: NickView(nick: speakerNick)) {
                             Text(speakerNick.name).font(.system(size: 50))
-                                .foregroundStyle(speakerNick.getColor()).bold()
+                                .foregroundStyle(speakerNick.getColor())
+                                .bold()
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.5)
+                                .padding(.horizontal, 20)
                         }
                     }
                 }.onReceive(timer) { _ in
@@ -209,6 +245,7 @@ struct ContentView: View, TwitchIRCDelegate {
                     if audioManager.speakerCountdown == 0 {
                         audioManager.speakerActive = false
                     }
+                    saveNewNicks()
                 }
             } customize: {
                 $0
@@ -247,15 +284,39 @@ struct ContentView: View, TwitchIRCDelegate {
                     } label: {
                         Image(systemName: "gearshape")
                     }
+                    Button {
+                        showHelp = true
+                    } label: {
+                        Image(systemName: "questionmark.circle.fill")
+                    }
                 }
             }
             .navigationDestination(isPresented: $showSettings) {
                 SettingsView()
             }
+            .navigationDestination(isPresented: $showHelp) {
+                HelpView()
+            }
         }
     }
 }
 
+//final actor SimpleModelActor: ModelActor {
+//    let modelExecutor: any ModelExecutor
+//    let modelContainer: ModelContainer
+//    let context: ModelContext
+//    
+//    init(modelContainer: ModelContainer) {
+//        self.modelContainer = modelContainer
+//        self.context = ModelContext(modelContainer)
+//        self.modelExecutor = DefaultSerialModelExecutor(modelContext: context)
+//    }
+//    
+//    func insert(nick: Nick) {
+//        context.insert(nick)
+//        try! context.save() // this does not impact a re-display by the @Query in ContentView. I would have expected it to cause a view redraw.
+//    }
+//}
 
     
 #Preview {

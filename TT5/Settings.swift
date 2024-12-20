@@ -126,7 +126,7 @@ final class Settings {
 
 
 @Model
-final class Nick {
+final class Nick: Identifiable {
     var name: String
     var muted: Bool
     var pronunciation: String?
@@ -145,6 +145,10 @@ final class Nick {
         self.name = name
         self.muted = muted
         self.defaults = true
+    }
+    
+    var id: String {
+        return name
     }
     
     func set(overrideDefaults: Bool, muted: Bool, pronunciation: String, voice: Voice, rate: Rate, pitch: Pitch, volume: Volume) {

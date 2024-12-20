@@ -14,84 +14,147 @@ struct SettingsView: View {
     @State private var volume: Int = 0
     @State private var channel: String = ""
     @State private var muted: Bool = false
+    @State private var mods: Bool = true
+    @State private var vips: Bool = true
+    @State private var subscribers: Bool = true
+    @State private var broadcaster: Bool = true
+    @State private var highlighted: Bool = true
     @State var rate: Rate = .normal
     @State var pitch: Pitch = .normal
     @State var voice: Voice = .female
+    @State private var showHelp = false
     let minVolume: Int = 0
     let maxVolume: Int = 10
     
     var body: some View {
         VStack(
             alignment: .leading,
-            spacing: 10
+            spacing: 0
         ) {
             HStack {
+                Image(systemName: "video.fill").padding(.trailing, 5)
                 Text("Channel")
                 Spacer()
                 TextField("Channel Name", text: $channel)
                     .padding(5)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.black)
-                    .padding(.horizontal, 20)
-            }.padding(.vertical, 5)
-            HStack {
-                Text("Volume")
-                Spacer()
-                Button {
-                    if volume > minVolume {
-                        volume -= 1
+                    .padding(.horizontal, 10)
+            }.padding(.vertical, 10)
+                .padding(.leading, 15)
+                .padding(.trailing, 5)
+            List {
+                HStack {
+                    Image(systemName: "speaker.wave.3.fill")
+                    Text("Speech Volume")
+                    Spacer()
+                    Button {
+                        if volume > minVolume {
+                            volume -= 1
+                        }
+                    } label: {
+                        Image(systemName: "speaker.minus.fill")
                     }
-                } label: {
-                    Image(systemName: "speaker.minus.fill")
-                }
-                Text("\(volume)").padding(.horizontal, 20)
-                Button {
-                    if volume < maxVolume {
-                        volume += 1
+                    Text("\(volume)").padding(.horizontal, 20)
+                    Button {
+                        if volume < maxVolume {
+                            volume += 1
+                        }
+                    } label: {
+                        Image(systemName: "speaker.plus.fill")
                     }
-                } label: {
-                    Image(systemName: "speaker.plus.fill")
-                }.padding(.trailing, 20)
-            }.padding(.vertical, 5)
-            HStack {
-                Toggle("Muted", isOn: $muted)
-                    .padding(.trailing, 20)
-            }.padding(.vertical, 5)
-            HStack {
-                Text("Voice")
-                Spacer()
-                Picker("Voice", selection: $voice) {
-                    ForEach(Voice.allCases, id: \.self) {
-                        Text($0.description())
+                }.padding(.vertical, 5)
+                HStack {
+                    Image(systemName: "speaker.slash.fill").padding(.leading, 2).padding(.trailing, 8)
+                    Text("All muted")
+                    Spacer()
+                    Toggle("", isOn: $muted)
+                }.padding(.vertical, 5)
+                HStack {
+                    Image(systemName: "person.badge.shield.checkmark.fill")
+                    Image(systemName: "speaker")
+                    Text("Exceptions").bold()
+                }.padding(.vertical, 5)
+                VStack {
+                    HStack {
+                        Image("mod").resizable().scaledToFit().frame(height: 20)
+                        Text("Moderators")
+                        Spacer()
+                        Toggle("", isOn: $mods)
+                    }.padding(.bottom, 5)
+                    HStack {
+                        Image("vip").resizable().scaledToFit().frame(height: 20)
+                        Text("VIPs")
+                        Spacer()
+                        Toggle("", isOn: $vips)
+                    }.padding(.bottom, 5)
+                    HStack {
+                        Image("sub").resizable().scaledToFit().frame(height: 20)
+                        Text("Subscribers")
+                        Spacer()
+                        Toggle("", isOn: $subscribers)
+                    }.padding(.bottom, 5)
+                    HStack {
+                        Image("own").resizable().scaledToFit().frame(height: 20)
+                        Text("Channel owner")
+                        Spacer()
+                        Toggle("", isOn: $broadcaster)
+                    }.padding(.bottom, 5)
+                    HStack {
+                        Image(systemName: "highlighter").resizable().scaledToFit().frame(height: 20)
+                        Text("Highlighted text")
+                        Spacer()
+                        Toggle("", isOn: $highlighted)
+                    }.padding(.bottom, 5)
+                }.padding(.leading, 25)
+                HStack {
+                    NavigationLink(destination: NickListView()) {
+                        Image(systemName: "person.3.sequence.fill")
+                        Text("Customize Nicks")
                     }
-                }
-                .pickerStyle(.menu)
-            }
-            HStack {
-                Text("Voice Pitch")
-                Spacer()
-                Picker("Pitch", selection: $pitch) {
-                    ForEach(Pitch.allCases, id: \.self) {
-                        Text($0.description())
+                }.padding(.vertical, 5)
+                HStack {
+                    Image(systemName: "gearshape.fill")
+                    Text("Default settings for all nicks").bold()
+                }.padding(.vertical, 5)
+                VStack {
+                    HStack {
+                        Text("Voice")
+                        Spacer()
+                        Picker("Voice", selection: $voice) {
+                            ForEach(Voice.allCases, id: \.self) {
+                                Text($0.description())
+                            }
+                        }
+                        .pickerStyle(.menu)
                     }
-                }
-                .pickerStyle(.menu)
-            }
-            HStack {
-                Text("Speech Rate")
-                Spacer()
-                Picker("Rate", selection: $rate) {
-                    ForEach(Rate.allCases, id: \.self) {
-                        Text($0.description())
+                    HStack {
+                        Text("Voice Pitch")
+                        Spacer()
+                        Picker("Pitch", selection: $pitch) {
+                            ForEach(Pitch.allCases, id: \.self) {
+                                Text($0.description())
+                            }
+                        }
+                        .pickerStyle(.menu)
                     }
-                }
-                .pickerStyle(.menu)
-            }
-            
-            
+                    HStack {
+                        Text("Speech Rate")
+                        Spacer()
+                        Picker("Rate", selection: $rate) {
+                            ForEach(Rate.allCases, id: \.self) {
+                                Text($0.description())
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                }.padding(.leading, 20)
+            }.listStyle(PlainListStyle())
             HStack {
-                Button("Save") { save() }
-            }.padding(.vertical, 5)
+                Button("Save") {
+                    save()
+                }.buttonStyle(.borderedProminent)
+            }.padding(.all, 20)
             Spacer()
         }.onAppear {
             channel = settings.first!.channel
@@ -103,7 +166,16 @@ struct SettingsView: View {
         }.onDisappear {
             save()
         }
-        .padding(20)
+        .navigationTitle("Settings")
+        .toolbar {
+            Button {
+                showHelp = true
+            } label: {
+                Image(systemName: "questionmark.circle.fill")
+            }
+        }.navigationDestination(isPresented: $showHelp) {
+            HelpView()
+        }
     }
     
     func save() {
