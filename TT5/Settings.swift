@@ -40,10 +40,10 @@ enum Rate: Float, CaseIterable {
     
     func ssml() -> String {
         switch self {
-        case .slow: return "low"
+        case .slow: return "50%"
         case .normal: return "default"
-        case .fast: return "high"
-        case .hurried: return "x-high"
+        case .fast: return "150%"
+        case .hurried: return "200%"
         }
     }
     
@@ -104,14 +104,25 @@ final class Settings {
     var rate: Float
     var pitch: Float
     var voice: String
+    var mods: Bool
+    var vips: Bool
+    var subscribers: Bool
+    var broadcaster: Bool
+    var highlighted: Bool
     
-    init(channel: String, volume: Int, muted: Bool, rate: Rate, pitch: Pitch, voice: Voice) {
+    init(channel: String, volume: Int, muted: Bool, rate: Rate, pitch: Pitch, voice: Voice,
+         mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool) {
         self.channel = channel
         self.volume = volume
         self.muted = muted
         self.rate = rate.rawValue
         self.pitch = pitch.rawValue
         self.voice = voice.rawValue
+        self.mods = mods
+        self.vips = vips
+        self.subscribers = subscribers
+        self.broadcaster = broadcaster
+        self.highlighted = highlighted
     }
     
     func set(_settings: Settings) {
@@ -120,7 +131,12 @@ final class Settings {
         self.muted = _settings.muted
         self.rate = _settings.rate
         self.pitch = _settings.pitch
-        self.voice = _settings.voice   
+        self.voice = _settings.voice
+        self.mods = _settings.mods
+        self.vips = _settings.vips
+        self.subscribers = _settings.subscribers
+        self.broadcaster = _settings.broadcaster
+        self.highlighted = _settings.highlighted
     }
 }
 
@@ -128,9 +144,9 @@ final class Settings {
 @Model
 final class Nick: Identifiable {
     var name: String
+    var defaults: Bool
     var muted: Bool
     var pronunciation: String?
-    var defaults: Bool
     var volume: Int?
     var rate: Float?
     var pitch: Float?
@@ -152,15 +168,16 @@ final class Nick: Identifiable {
     }
     
     func set(overrideDefaults: Bool, muted: Bool, pronunciation: String, voice: Voice, rate: Rate, pitch: Pitch, volume: Volume) {
-        self.muted = muted
         self.pronunciation = pronunciation
         if overrideDefaults {
+            self.muted = muted
             self.voice = voice.rawValue
             self.pitch = pitch.rawValue
             self.rate = rate.rawValue
             self.volume = volume.rawValue
             self.defaults = false
         } else {
+            self.muted = muted
             self.voice = nil
             self.pitch = nil
             self.rate = nil

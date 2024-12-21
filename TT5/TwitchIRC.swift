@@ -79,7 +79,7 @@ class TwitchIRC: WebSocketConnectionDelegate, ObservableObject {
         if !self.channel.isEmpty {
             send(OutgoingMessage.part(from: self.channel))
         }
-        self.channel = channel
+        self.channel = channel.trimmingCharacters(in: .whitespacesAndNewlines)
         if !self.channel.isEmpty {
             send(OutgoingMessage.join(to: self.channel))
         }

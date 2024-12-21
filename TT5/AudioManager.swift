@@ -185,11 +185,34 @@ final class AudioManager: NSObject, ObservableObject {
         return char.isLetter || char.isNumber || char == "_"
     }
 
-    func textToSpeech(settings: Settings, nicks: [Nick], nick: Nick, text: String, messageId: String) {
+    func textToSpeech(settings: Settings, nicks: [Nick], item: Item) {
+        let nick = item.nick
+        if utterances.count > 5 {
+            print("speech skipped", nick.name, "queue", utterances.count, "> 5")
+            item.skipped = true
+            return
+        }
+        if !nick.defaults && nick.muted {
+            print("nick muted", nick.name)
+            item.skipped = true
+            return
+        }
+        if nick.muted {
+            if (nick.mod! && settings.mods)
+                || (nick.vip! && settings.vips)
+                || (nick.subscriber! && settings.subscribers)
+                || (nick.mod! && settings.mods)
+                || (nick.broadcaster! && settings.broadcaster)
+                || (item.messageId == "highlighted-message" && settings.highlighted) {
+                print("nick unmuted by role", nick.name)
+            } else {
+                print("nick muted by default", nick.name)
+                item.skipped = true
+                return
+            }
+        }
         activateSession()
-        
-        let mappedText = replaceAtWords(text: text, nicks: nicks)
-        
+        let mappedText = replaceAtWords(text: item.message, nicks: nicks)
         let charactersToReplace = CharacterSet(charactersIn: "[]{}/|\\~^&;")
         let cleanedText = removeExtraRepetitions(
             replaceListedCharactersWithSpaces(mappedText, charactersToReplace: charactersToReplace))
@@ -201,7 +224,10 @@ final class AudioManager: NSObject, ObservableObject {
         let ssmlRate = Rate.fromRawValue(rawValue: nick.rate!).ssml()
         let ssmlPitch = Pitch.fromRawValue(rawValue: nick.pitch!).ssml()
         let ssmlVolume = ssmlVolumes[volumeIndex]
-        let utterance = AVSpeechUtterance(ssmlRepresentation: "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlPitch)'>\(cleanedText.escapedForXML())</prosody></speak>")!
+        let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
+        print(ssml)
+        let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
+        
         utterance.prefersAssistiveTechnologySettings = true
         //utterance.volume = volumes[volumeIndex]
         speechTools.recognizer.processString(cleanedText)

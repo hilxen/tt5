@@ -48,20 +48,16 @@ struct SettingsView: View {
                     Image(systemName: "speaker.wave.3.fill")
                     Text("Speech Volume")
                     Spacer()
-                    Button {
+                    Image(systemName: "speaker.minus.fill").onTapGesture {
                         if volume > minVolume {
                             volume -= 1
                         }
-                    } label: {
-                        Image(systemName: "speaker.minus.fill")
                     }
                     Text("\(volume)").padding(.horizontal, 20)
-                    Button {
+                    Image(systemName: "speaker.plus.fill").onTapGesture {
                         if volume < maxVolume {
                             volume += 1
                         }
-                    } label: {
-                        Image(systemName: "speaker.plus.fill")
                     }
                 }.padding(.vertical, 5)
                 HStack {
@@ -121,7 +117,7 @@ struct SettingsView: View {
                     HStack {
                         Text("Voice")
                         Spacer()
-                        Picker("Voice", selection: $voice) {
+                        Picker("", selection: $voice) {
                             ForEach(Voice.allCases, id: \.self) {
                                 Text($0.description())
                             }
@@ -131,7 +127,7 @@ struct SettingsView: View {
                     HStack {
                         Text("Voice Pitch")
                         Spacer()
-                        Picker("Pitch", selection: $pitch) {
+                        Picker("", selection: $pitch) {
                             ForEach(Pitch.allCases, id: \.self) {
                                 Text($0.description())
                             }
@@ -141,7 +137,7 @@ struct SettingsView: View {
                     HStack {
                         Text("Speech Rate")
                         Spacer()
-                        Picker("Rate", selection: $rate) {
+                        Picker("", selection: $rate) {
                             ForEach(Rate.allCases, id: \.self) {
                                 Text($0.description())
                             }
@@ -163,6 +159,11 @@ struct SettingsView: View {
             rate = Rate.allCases.first(where: {$0.rawValue == settings.first!.rate}) ?? .normal
             pitch = Pitch.allCases.first(where: {$0.rawValue == settings.first!.pitch}) ?? .normal
             voice = Voice.allCases.first(where: {$0.rawValue == settings.first!.voice}) ?? .female
+            mods = settings.first!.mods
+            vips = settings.first!.vips
+            subscribers = settings.first!.subscribers
+            broadcaster = settings.first!.broadcaster
+            highlighted = settings.first!.highlighted
         }.onDisappear {
             save()
         }
@@ -184,7 +185,12 @@ struct SettingsView: View {
         settings.first!.muted = muted
         self.settings.first!.rate = rate.rawValue
         self.settings.first!.pitch = pitch.rawValue
-        self.settings.first!.voice = voice.rawValue 
+        self.settings.first!.voice = voice.rawValue
+        self.settings.first!.mods = mods
+        self.settings.first!.vips = vips
+        self.settings.first!.subscribers = subscribers
+        self.settings.first!.broadcaster = broadcaster
+        self.settings.first!.highlighted = highlighted
         try! modelContext.save()
     }
     

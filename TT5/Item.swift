@@ -13,9 +13,12 @@ import SwiftData
 final class Item {
     var nick: Nick
     var message: String
+    var messageId: String
+    var skipped: Bool = false
     
-    init(nick: Nick, message: String) {
+    init(nick: Nick, message: String, messageId: String) {
         self.nick = nick
         self.message = message
+        self.messageId = messageId
     }
 }

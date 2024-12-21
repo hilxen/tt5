@@ -43,7 +43,8 @@ struct ContentView: View, TwitchIRCDelegate {
     
     func initSettings() {
         if settings.isEmpty {
-            modelContext.insert(Settings(channel: "", volume: 5, muted: false, rate: .normal, pitch: .normal, voice: .female))
+            modelContext.insert(Settings(channel: "", volume: 5, muted: false, rate: .normal, pitch: .normal, voice: .female,
+                                         mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true))
             try! modelContext.save()
         }
     }
@@ -100,10 +101,18 @@ struct ContentView: View, TwitchIRCDelegate {
         print("get nick \(name)")
         let _settings = settings.first!
         if let nick = nicks.first(where: {$0.name == name}) {
-            nick.volume = nick.volume ?? Volume.normal.rawValue
-            nick.rate = nick.rate ?? _settings.rate
-            nick.pitch = nick.pitch ?? _settings.pitch
-            nick.voice = nick.voice ?? _settings.voice
+            if nick.defaults {
+                nick.muted = _settings.muted
+                nick.volume = Volume.normal.rawValue
+                nick.rate = _settings.rate
+                nick.pitch = _settings.pitch
+                nick.voice = _settings.voice
+            } else {
+                nick.volume = nick.volume ?? Volume.normal.rawValue
+                nick.rate = nick.rate ?? _settings.rate
+                nick.pitch = nick.pitch ?? _settings.pitch
+                nick.voice = nick.voice ?? _settings.voice
+            }
             return nick
         } else {
             let nick = Nick(name: name, muted: _settings.muted)
@@ -112,11 +121,6 @@ struct ContentView: View, TwitchIRCDelegate {
             nick.pitch = _settings.pitch
             nick.voice = _settings.voice
             model.newNicks.append(Nick(name: name, muted: _settings.muted))
-//            if simpleModelActor != nil {
-//                Task {
-//                    await simpleModelActor.insert(nick: Nick(name: name, muted: _settings.muted))
-//                }
-//            }
             return nick
         }
     }
@@ -131,11 +135,11 @@ struct ContentView: View, TwitchIRCDelegate {
     
     func addItem(nick: Nick, text: String, messageId: String) {
         print("addItem model.list.count=\(model.list.count)")
-        let item = Item(nick: nick, message: text)
+        let item = Item(nick: nick, message: text, messageId: messageId)
         model.list.append(item)
         let bots = ["", "nightbot", "moobot", "streamelements"]  // move to settings
-        if !bots.contains(nick.name.lowercased()) && !nick.muted {
-            playText(nick: nick, text: text, messageId: messageId)
+        if !bots.contains(nick.name.lowercased()) {
+            playText(item: item)
         }
         if model.list.count > maxMessages {
             model.list.removeFirst()
@@ -143,8 +147,8 @@ struct ContentView: View, TwitchIRCDelegate {
     }
 
     
-    func playText(nick: Nick, text: String, messageId: String) {
-        audioManager.textToSpeech(settings: settings.first!, nicks: nicks, nick: nick, text: text, messageId: messageId)
+    func playText(item: Item) {
+        audioManager.textToSpeech(settings: settings.first!, nicks: nicks, item: item)
 //        let textEncoded = text.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
 //        let url = "https://ancq5cs6vo5xysowyp6qttq2he0aexqb.lambda-url.us-west-1.on.aws/"
 //        + "?language-code=ru-RU"
@@ -165,15 +169,17 @@ struct ContentView: View, TwitchIRCDelegate {
                 ScrollViewReader { scrollView in
                     ScrollView(.vertical) {
                         LazyVStack {
+                            // Array(model.list.enumerated()), id: \.offset) is needed for auto scroll
                             ForEach(Array(model.list.enumerated()), id: \.offset) { index, item in
-                                HStack(alignment: .top, spacing: 0) {
-                                    let icon = item.nick.muted != settings.first!.muted
-                                        ? (item.nick.muted ? "speaker.slash": "speaker") : ""
-                                    if icon != "" {
-                                        Image(systemName: icon)
-                                    }
+                                VStack(alignment: .leading, spacing: 0) {
                                     NavigationLink(destination: NickView(nick: item.nick)) {
                                         HStack(spacing: 1) {
+                                            let icon = item.skipped ? "play.slash"
+                                                : (item.nick.muted != settings.first!.muted)
+                                                ? (item.nick.muted ? "speaker.slash": "speaker") : ""
+                                            if icon != "" {
+                                                Image(systemName: icon)
+                                            }
                                             if item.nick.mod ?? false {
                                                 Image("mod").resizable().scaledToFit().frame(height: scale * 0.8)
                                             }
@@ -189,16 +195,17 @@ struct ContentView: View, TwitchIRCDelegate {
                                             Text(item.nick.name).foregroundStyle(item.nick.getColor()).bold().padding(.leading, 2)
                                         }
                                     }
-                                    Spacer()
                                     Text(item.message)
                                         .onTapGesture {
-                                            playText(nick: item.nick, text: item.message, messageId: "")
+                                            playText(item: item)
                                             vibrate.toggle()
                                         }
                                         .sensoryFeedback(.success, trigger: vibrate)
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .font(.system(size: scale))
-                                .padding([.bottom], 1)
+                                .padding(.bottom, 2).padding(.top, 0)
+                                //.overlay(Divider(), alignment: .bottom)
                             }
                         }
                     }

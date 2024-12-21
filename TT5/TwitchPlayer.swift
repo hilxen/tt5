@@ -26,7 +26,8 @@ struct TwitchPlayerWebView: UIViewRepresentable {
     }
     
     func reload() -> WKNavigation? {
-        return webView.load(URLRequest(url: URL(string: "https://player.twitch.tv/?channel=\(settings.first!.channel)&parent=localhost&autoplay=true&allowfullscreen")!))
+        let channel = settings.first!.channel.trimmingCharacters(in: .whitespacesAndNewlines)
+        return webView.load(URLRequest(url: URL(string: "https://player.twitch.tv/?channel=\(channel)&parent=localhost&autoplay=true&allowfullscreen")!))
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {

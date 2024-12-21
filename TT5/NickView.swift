@@ -40,6 +40,11 @@ struct NickView: View {
                 Spacer()
                 Toggle("", isOn: $muted)
                     .padding(.trailing, 20)
+                    .onChange(of: muted) {
+                        if muted != settings.first!.muted {
+                            overrideDefaults = true
+                        }
+                    }
             }
             HStack {
                 Image(systemName: "person.wave.2.fill")
@@ -54,6 +59,11 @@ struct NickView: View {
             HStack {
                 Toggle("Override defaults", isOn: $overrideDefaults)
                     .padding(.trailing, 20)
+                    .onChange(of: overrideDefaults) {
+                        if !overrideDefaults {
+                            muted = settings.first!.muted
+                        }
+                    }
             }
             VStack {
                 HStack {
@@ -100,7 +110,7 @@ struct NickView: View {
             Spacer()
 
         }.onAppear {
-            self.muted = nick.muted
+            self.muted = nick.defaults ? settings.first!.muted : nick.muted
             self.pronunciation = nick.pronunciation ?? ""
             self.overrideDefaults = !nick.defaults
             self.volume = Volume.allCases.first(where: {$0.rawValue == nick.volume}) ?? .normal
