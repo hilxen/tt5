@@ -6,11 +6,15 @@
 //
 import SwiftUI
 import SwiftData
+import NaturalLanguage
+import AVFoundation
 
 struct SettingsView: View {
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @Environment(\.modelContext) private var modelContext
     @Query private var settings: [Settings]
+    @Query private var languages: [Language]
+    
     @State private var volume: Int = 0
     @State private var channel: String = ""
     @State private var muted: Bool = false
@@ -23,6 +27,7 @@ struct SettingsView: View {
     @State var pitch: Pitch = .normal
     @State var voice: Voice = .female
     @State private var showHelp = false
+    @State var enabledLanguages: [Language] = []
     let minVolume: Int = 0
     let maxVolume: Int = 10
     
@@ -104,12 +109,6 @@ struct SettingsView: View {
                     }.padding(.bottom, 5)
                 }.padding(.leading, 25)
                 HStack {
-                    NavigationLink(destination: NickListView()) {
-                        Image(systemName: "person.3.sequence.fill")
-                        Text("Customize Nicks")
-                    }
-                }.padding(.vertical, 5)
-                HStack {
                     Image(systemName: "gearshape.fill")
                     Text("Default settings for all nicks").bold()
                 }.padding(.vertical, 5)
@@ -145,6 +144,21 @@ struct SettingsView: View {
                         .pickerStyle(.menu)
                     }
                 }.padding(.leading, 20)
+                HStack {
+                    NavigationLink(destination: NickListView()) {
+                        Image(systemName: "person.3.sequence.fill")
+                        Text("Customize Nicks")
+                    }
+                }.padding(.vertical, 5)
+                HStack {
+                    NavigationLink(destination: LanguagesView()) {
+                        Image(systemName: "person.2.wave.2.fill")
+                        Text("Languages:").padding(.leading, 10)
+                        ForEach(enabledLanguages) { language in
+                            Text(language.name)
+                        }
+                    }
+                }.padding(.vertical, 5)
             }.listStyle(PlainListStyle())
             HStack {
                 Button("Save") {
@@ -164,6 +178,7 @@ struct SettingsView: View {
             subscribers = settings.first!.subscribers
             broadcaster = settings.first!.broadcaster
             highlighted = settings.first!.highlighted
+            initLanguages()
         }.onDisappear {
             save()
         }
@@ -194,4 +209,152 @@ struct SettingsView: View {
         try! modelContext.save()
     }
     
+    func initLanguages() {
+        let voices = AVSpeechSynthesisVoice.speechVoices() //list of supported voices
+        var added: [String: Language] = [:]
+        enabledLanguages.removeAll()
+        for voice in voices {
+            var language = languages.first(where: {$0.name == voice.language}) ?? added[voice.language]
+            let found: Bool = language != nil
+            if !found {
+                language = Language(name: voice.language, enabled: false)
+                added[voice.language] = language
+            }
+            if !language!.voiceIds.contains(where: {$0.id == voice.identifier}) {
+                language!.voiceIds.append(VoiceId(id: voice.identifier, gender: genderToSting(voice.gender)))
+            }
+            if language!.femaleVoiceId == nil && voice.gender == .female {
+                language!.femaleVoiceId = voice.identifier
+            }
+            if language!.maleVoiceId == nil && voice.gender == .male {
+                language!.maleVoiceId = voice.identifier
+            }
+            if !found {
+                modelContext.insert(Language(name: voice.language, enabled: false))
+            }
+            if language!.enabled && !enabledLanguages.contains(where: {$0.name == language!.name}) {
+                enabledLanguages.append(language!)
+            }
+        }
+        if enabledLanguages.isEmpty {
+            let defaultLanuage = "en-US"
+            var language = languages.first(where: {$0.name == defaultLanuage}) ?? added[defaultLanuage]!
+            language.enabled = true
+            enabledLanguages.append(language)
+        }
+        try! modelContext.save()
+    }
+}
+
+
+func voiceName(_ id: String) -> String {
+    let name = id.components(separatedBy: ".").last!
+    if name.starts(with: "siri_") {
+        return name.components(separatedBy: "_")[1]
+    } else {
+        return name
+    }
+}
+
+func genderToSting(_ gender: AVSpeechSynthesisVoiceGender) -> String {
+    switch gender {
+    case .female: return "female"
+    case .male: return "male"
+    default: return "unknown"
+    }
+}
+
+
+struct VoiceIdsView: View {
+    let language: Language
+    var body: some View {
+        VStack(
+            alignment: .leading,
+            spacing: 10
+        ) {
+            List(language.voiceIds) { voiceId in
+                //let voiceName = voiceId.id.components(separatedBy: ".").last!
+                HStack {
+                    Image(systemName: voiceId.gender == "female"
+                          ? "figure.stand.dress" : voiceId.gender == "male"
+                          ? "figure.stand" : "figure.stand.dress.line.vertical.figure"
+                    )
+                    Text(voiceName(voiceId.id))
+                    Spacer()
+                    Button {
+                        if language.femaleVoiceId != voiceId.id && language.maleVoiceId != voiceId.id {
+                            if language.maleVoiceId == nil && language.femaleVoiceId == nil {
+                                language.femaleVoiceId = voiceId.id
+                            } else if language.maleVoiceId == nil {
+                                language.maleVoiceId = voiceId.id
+                            } else {
+                                language.femaleVoiceId = voiceId.id
+                            }
+                        } else if language.femaleVoiceId == voiceId.id {
+                            language.femaleVoiceId = nil
+                            if language.maleVoiceId == nil {
+                                language.maleVoiceId = voiceId.id
+                            }
+                        } else if language.maleVoiceId == voiceId.id {
+                            language.maleVoiceId = nil
+                            if language.femaleVoiceId == nil {
+                                language.femaleVoiceId = voiceId.id
+                            }
+                        }
+                    } label: {
+                        Image(systemName: language.femaleVoiceId == voiceId.id
+                              ? "figure.stand.dress" : language.maleVoiceId == voiceId.id
+                              ? "figure.stand" : "viewfinder")
+                    }
+                }
+            }
+        }.navigationTitle("Voices \(language.name)")
+    }
+}
+
+
+struct LanguagesView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \Language.name) private var languages: [Language]
+    
+    
+    var body: some View {
+        VStack(
+            alignment: .leading,
+            spacing: 10
+        ) {
+            Text("Tip: for best experience select only one or two languages to enable voice synthesis")
+                .padding(.horizontal, 20)
+            List(languages) {language in
+                VStack{
+                    HStack{
+                        Text(language.name)
+                        Toggle("", isOn: Binding(
+                            get: { return language.enabled },
+                            set: { (newValue) in
+                                if let l = languages.first(where: {
+                                    $0.enabled && $0.name.components(separatedBy: "-")[0] == language.name.components(separatedBy: "-")[0]}) {
+                                    l.enabled = false
+                                }
+                                return language.enabled = newValue}
+                        ))
+                    }
+                    NavigationLink(destination: VoiceIdsView(language: language)) {
+                        HStack{
+                            if language.femaleVoiceId != nil {
+                                Image(systemName: "figure.stand.dress")
+                                Text(voiceName(language.femaleVoiceId!))
+                            }
+                            if language.maleVoiceId != nil {
+                                Image(systemName: "figure.stand")
+                                Text(voiceName(language.maleVoiceId!))
+                            }
+                            Spacer()
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("Languages")
+    }
 }

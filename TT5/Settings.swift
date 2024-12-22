@@ -223,3 +223,32 @@ final class Nick: Identifiable {
         return Color(red: r, green: g, blue: b, opacity: a)
     }
 }
+
+
+@Model
+final class Language: Identifiable {
+    var name: String
+    var enabled: Bool
+    var femaleVoiceId: String?
+    var maleVoiceId: String?
+    var voiceIds: [VoiceId] = []
+    
+    var id: String {
+        return name
+    }
+    
+    init(name: String, enabled: Bool) {
+        self.name = name
+        self.enabled = enabled
+    }
+}
+
+struct VoiceId: Codable, Hashable, Identifiable {
+    let id: String
+    let gender: String
+
+    init(id: String, gender: String) {
+        self.id = id
+        self.gender = gender
+    }
+}

@@ -25,6 +25,8 @@ struct ContentView: View, TwitchIRCDelegate {
     @Environment(\.modelContext) private var modelContext
     @Query private var settings: [Settings]
     @Query private var nicks: [Nick]
+    @Query(filter: #Predicate<Language> { $0.enabled }) private var enabledLanguages: [Language]
+
     @ObservedObject private var twitchIRC = TwitchIRC()
     @State private var showSettings = false
     @State private var showHelp = false
@@ -58,8 +60,14 @@ struct ContentView: View, TwitchIRCDelegate {
         if _settings.channel.isEmpty {
             showSettings = true
         }
-        model.shouldRefresh.send(true)
-        //simpleModelActor = SimpleModelActor(modelContainer: modelContext.container)
+        //model.shouldRefresh.send(true)
+        audioManager.contentViewActive = true
+        
+        
+    }
+    
+    func onDisappear() {
+        audioManager.contentViewActive = false
     }
     
     func didBecomeActiveNotification() {
@@ -165,105 +173,72 @@ struct ContentView: View, TwitchIRCDelegate {
                     .frame(height: 200)
                     .padding([.all], 5)
             }
-            ZStack {
-                ScrollViewReader { scrollView in
-                    ScrollView(.vertical) {
-                        LazyVStack {
-                            // Array(model.list.enumerated()), id: \.offset) is needed for auto scroll
-                            ForEach(Array(model.list.enumerated()), id: \.offset) { index, item in
-                                VStack(alignment: .leading, spacing: 0) {
-                                    NavigationLink(destination: NickView(nick: item.nick)) {
-                                        HStack(spacing: 1) {
-                                            let icon = item.skipped ? "play.slash"
-                                                : (item.nick.muted != settings.first!.muted)
-                                                ? (item.nick.muted ? "speaker.slash": "speaker") : ""
-                                            if icon != "" {
-                                                Image(systemName: icon)
-                                            }
-                                            if item.nick.mod ?? false {
-                                                Image("mod").resizable().scaledToFit().frame(height: scale * 0.8)
-                                            }
-                                            if item.nick.subscriber ?? false {
-                                                Image("sub").resizable().scaledToFit().frame(height: scale * 0.8)
-                                            }
-                                            if item.nick.vip ?? false {
-                                                Image("vip").resizable().scaledToFit().frame(height: scale * 0.8)
-                                            }
-                                            if item.nick.broadcaster ?? false {
-                                                Image("own").resizable().scaledToFit().frame(height: scale * 0.8)
-                                            }
-                                            Text(item.nick.name).foregroundStyle(item.nick.getColor()).bold().padding(.leading, 2)
+            ScrollViewReader { scrollView in
+                ScrollView(.vertical) {
+                    LazyVStack {
+                        // Array(model.list.enumerated()), id: \.offset) is needed for auto scroll
+                        ForEach(Array(model.list.enumerated()), id: \.offset) { index, item in
+                            VStack(alignment: .leading, spacing: 0) {
+                                NavigationLink(destination: NickView(nick: item.nick)) {
+                                    HStack(spacing: 1) {
+                                        let icon = item.skipped ? "play.slash"
+                                            : (item.nick.muted != settings.first!.muted)
+                                            ? (item.nick.muted ? "speaker.slash": "speaker") : ""
+                                        if icon != "" {
+                                            Image(systemName: icon)
                                         }
+                                        if item.nick.mod ?? false {
+                                            Image("mod").resizable().scaledToFit().frame(height: scale * 0.8)
+                                        }
+                                        if item.nick.subscriber ?? false {
+                                            Image("sub").resizable().scaledToFit().frame(height: scale * 0.8)
+                                        }
+                                        if item.nick.vip ?? false {
+                                            Image("vip").resizable().scaledToFit().frame(height: scale * 0.8)
+                                        }
+                                        if item.nick.broadcaster ?? false {
+                                            Image("own").resizable().scaledToFit().frame(height: scale * 0.8)
+                                        }
+                                        Text(item.nick.name).foregroundStyle(item.nick.getColor()).bold().padding(.leading, 2)
                                     }
-                                    Text(item.message)
-                                        .onTapGesture {
-                                            playText(item: item)
-                                            vibrate.toggle()
-                                        }
-                                        .sensoryFeedback(.success, trigger: vibrate)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .font(.system(size: scale))
-                                .padding(.bottom, 2).padding(.top, 0)
-                                //.overlay(Divider(), alignment: .bottom)
+                                Text(item.message)
+                                    .onTapGesture {
+                                        playText(item: item)
+                                        vibrate.toggle()
+                                    }
+                                    .sensoryFeedback(.success, trigger: vibrate)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .font(.system(size: scale))
+                            .padding(.bottom, 2).padding(.top, 0)
+                            //.overlay(Divider(), alignment: .bottom)
+                        }
+                    }
+                }
+                .padding([.all], 10)
+                .onChange(of: model.list, {_, _ in
+                    DispatchQueue.main.async {
+                        if !model.list.isEmpty {
+                            withAnimation {
+                                scrollView.scrollTo(model.list.endIndex - 1, anchor: .bottom)
                             }
                         }
                     }
-                    .padding([.all], 10)
-                    .onChange(of: model.list, {_, _ in
-                        DispatchQueue.main.async {
-                            if !model.list.isEmpty {
-                                withAnimation {
-                                    scrollView.scrollTo(model.list.endIndex - 1, anchor: .bottom)
-                                }
-                            }
-                        }
-                    })
-                    .onAppear {
-                        onAppear()
-                    }
-                    .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification))
-                    { _ in didBecomeActiveNotification()}
-                        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification))
-                    { _ in didEnterBackgroundNotification()}
+                })
+                .onAppear {
+                    onAppear()
                 }
-            }.popup(isPresented: $audioManager.speakerActive) {
-                ZStack {
-                    if let speakerNick = audioManager.speakerNick {
-                        RoundedRectangle(cornerRadius: 20)
-                            .inset(by: 5) // inset value should be same as lineWidth in .stroke
-                            .stroke(.gray, lineWidth: 5)
-                            .frame(height: 100)
-                            .opacity(100.0)
-                            .background(Color.white)
-                        NavigationLink(destination: NickView(nick: speakerNick)) {
-                            Text(speakerNick.name).font(.system(size: 50))
-                                .foregroundStyle(speakerNick.getColor())
-                                .bold()
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.5)
-                                .padding(.horizontal, 20)
-                        }
-                    }
-                }.onReceive(timer) { _ in
-                    if audioManager.speakerCountdown > 0 {
-                        audioManager.speakerCountdown -= 1
-                    }
-                    if audioManager.speakerCountdown == 0 {
-                        audioManager.speakerActive = false
-                    }
-                    saveNewNicks()
+                .onDisappear() {
+                    onDisappear()
                 }
-            } customize: {
-                $0
-                    .type(.floater())
-                    .appearFrom(.topSlide)
-                    .position(.top)
-                    .animation(.spring())
-                    .closeOnTapOutside(true)
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification))
+                { _ in didBecomeActiveNotification()}
+                    .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification))
+                { _ in didEnterBackgroundNotification()}
             }
             .toolbar {
-                ToolbarItemGroup(placement: .topBarLeading) {
+                ToolbarItemGroup(placement: .bottomBar) {
                     Button {
                         if scale < 36 {
                             scale += 2
@@ -278,9 +253,7 @@ struct ContentView: View, TwitchIRCDelegate {
                     } label: {
                         Image(systemName: "textformat.size.smaller")
                     }
-                }
-
-                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Spacer()
                     Button {
                         model.shouldRefresh.send(true)
                     } label: {
@@ -304,6 +277,40 @@ struct ContentView: View, TwitchIRCDelegate {
             .navigationDestination(isPresented: $showHelp) {
                 HelpView()
             }
+        }.popup(isPresented: $audioManager.speakerActive) {
+            ZStack {
+                if let speakerNick = audioManager.speakerNick {
+                    RoundedRectangle(cornerRadius: 20)
+                        .inset(by: 5) // inset value should be same as lineWidth in .stroke
+                        .stroke(.gray, lineWidth: 5)
+                        .frame(height: 100)
+                        .background(Color.white)
+                    NavigationLink(destination: NickView(nick: speakerNick)) {
+                        Text(speakerNick.name).font(.system(size: 50))
+                            .foregroundStyle(speakerNick.getColor())
+                            .bold()
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
+                            .padding(.horizontal, 20)
+                    }
+                }
+            }.padding(.top, 200)
+            .onReceive(timer) { _ in
+                if audioManager.speakerCountdown > 0 {
+                    audioManager.speakerCountdown -= 1
+                }
+                if audioManager.speakerCountdown == 0 {
+                    audioManager.speakerActive = false
+                }
+                saveNewNicks()
+            }
+        } customize: {
+            $0
+                .type(.floater())
+                .appearFrom(.topSlide)
+                .position(.top)
+                .animation(.spring())
+                .closeOnTapOutside(true)
         }
     }
 }

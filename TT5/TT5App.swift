@@ -14,7 +14,7 @@ struct TT5App: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [Settings.self, Nick.self])
+        .modelContainer(for: [Settings.self, Nick.self, Language.self])
     }
     
 }
