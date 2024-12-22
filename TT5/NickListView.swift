@@ -25,7 +25,20 @@ struct FoundNicks: View {
         List(nicks, selection: $multiSelection) { nick in
             HStack {
                 NavigationLink(destination: NickView(nick: nick)) {
-                    Text(nick.name)
+                    VStack(alignment: .leading) {
+                        HStack {
+                            if !nick.defaults {
+                                Image(systemName: nick.muted ? "speaker.slash.fill" : "speaker.fill")
+                            }
+                            Text(nick.name)
+                        }
+                        if !(nick.pronunciation ?? "").isEmpty {
+                            HStack {
+                                Image(systemName: "arrowshape.forward")
+                                Text(nick.pronunciation!)
+                            }
+                        }
+                    }
                 }
             }.swipeActions(edge: .trailing) {
                 Button(role: .destructive) {

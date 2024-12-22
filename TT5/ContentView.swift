@@ -285,14 +285,14 @@ struct ContentView: View, TwitchIRCDelegate {
                         .stroke(.gray, lineWidth: 5)
                         .frame(height: 100)
                         .background(Color.white)
-                    NavigationLink(destination: NickView(nick: speakerNick)) {
+                    //NavigationLink(destination: NickView(nick: speakerNick)) {
                         Text(speakerNick.name).font(.system(size: 50))
                             .foregroundStyle(speakerNick.getColor())
                             .bold()
                             .lineLimit(1)
                             .minimumScaleFactor(0.5)
                             .padding(.horizontal, 20)
-                    }
+                    //}
                 }
             }.padding(.top, 200)
             .onReceive(timer) { _ in

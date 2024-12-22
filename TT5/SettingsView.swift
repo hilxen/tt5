@@ -9,6 +9,8 @@ import SwiftData
 import NaturalLanguage
 import AVFoundation
 
+
+
 struct SettingsView: View {
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @Environment(\.modelContext) private var modelContext
@@ -49,6 +51,16 @@ struct SettingsView: View {
                 .padding(.leading, 15)
                 .padding(.trailing, 5)
             List {
+                HStack(alignment: .top) {
+                    NavigationLink(destination: LanguagesView()) {
+                        Image(systemName: "person.2.wave.2.fill")
+                        VStack (alignment: .leading) {
+                            ForEach(enabledLanguages) { language in
+                                Text(Locale.current.localizedString(forIdentifier: language.name)!)
+                            }
+                        }.padding(.leading, 0)
+                    }
+                }.padding(.vertical, 5)
                 HStack {
                     Image(systemName: "speaker.wave.3.fill")
                     Text("Speech Volume")
@@ -150,15 +162,6 @@ struct SettingsView: View {
                         Text("Customize Nicks")
                     }
                 }.padding(.vertical, 5)
-                HStack {
-                    NavigationLink(destination: LanguagesView()) {
-                        Image(systemName: "person.2.wave.2.fill")
-                        Text("Languages:").padding(.leading, 10)
-                        ForEach(enabledLanguages) { language in
-                            Text(language.name)
-                        }
-                    }
-                }.padding(.vertical, 5)
             }.listStyle(PlainListStyle())
             HStack {
                 Button("Save") {
@@ -246,115 +249,3 @@ struct SettingsView: View {
     }
 }
 
-
-func voiceName(_ id: String) -> String {
-    let name = id.components(separatedBy: ".").last!
-    if name.starts(with: "siri_") {
-        return name.components(separatedBy: "_")[1]
-    } else {
-        return name
-    }
-}
-
-func genderToSting(_ gender: AVSpeechSynthesisVoiceGender) -> String {
-    switch gender {
-    case .female: return "female"
-    case .male: return "male"
-    default: return "unknown"
-    }
-}
-
-
-struct VoiceIdsView: View {
-    let language: Language
-    var body: some View {
-        VStack(
-            alignment: .leading,
-            spacing: 10
-        ) {
-            List(language.voiceIds) { voiceId in
-                //let voiceName = voiceId.id.components(separatedBy: ".").last!
-                HStack {
-                    Image(systemName: voiceId.gender == "female"
-                          ? "figure.stand.dress" : voiceId.gender == "male"
-                          ? "figure.stand" : "figure.stand.dress.line.vertical.figure"
-                    )
-                    Text(voiceName(voiceId.id))
-                    Spacer()
-                    Button {
-                        if language.femaleVoiceId != voiceId.id && language.maleVoiceId != voiceId.id {
-                            if language.maleVoiceId == nil && language.femaleVoiceId == nil {
-                                language.femaleVoiceId = voiceId.id
-                            } else if language.maleVoiceId == nil {
-                                language.maleVoiceId = voiceId.id
-                            } else {
-                                language.femaleVoiceId = voiceId.id
-                            }
-                        } else if language.femaleVoiceId == voiceId.id {
-                            language.femaleVoiceId = nil
-                            if language.maleVoiceId == nil {
-                                language.maleVoiceId = voiceId.id
-                            }
-                        } else if language.maleVoiceId == voiceId.id {
-                            language.maleVoiceId = nil
-                            if language.femaleVoiceId == nil {
-                                language.femaleVoiceId = voiceId.id
-                            }
-                        }
-                    } label: {
-                        Image(systemName: language.femaleVoiceId == voiceId.id
-                              ? "figure.stand.dress" : language.maleVoiceId == voiceId.id
-                              ? "figure.stand" : "viewfinder")
-                    }
-                }
-            }
-        }.navigationTitle("Voices \(language.name)")
-    }
-}
-
-
-struct LanguagesView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Language.name) private var languages: [Language]
-    
-    
-    var body: some View {
-        VStack(
-            alignment: .leading,
-            spacing: 10
-        ) {
-            Text("Tip: for best experience select only one or two languages to enable voice synthesis")
-                .padding(.horizontal, 20)
-            List(languages) {language in
-                VStack{
-                    HStack{
-                        Text(language.name)
-                        Toggle("", isOn: Binding(
-                            get: { return language.enabled },
-                            set: { (newValue) in
-                                if let l = languages.first(where: {
-                                    $0.enabled && $0.name.components(separatedBy: "-")[0] == language.name.components(separatedBy: "-")[0]}) {
-                                    l.enabled = false
-                                }
-                                return language.enabled = newValue}
-                        ))
-                    }
-                    NavigationLink(destination: VoiceIdsView(language: language)) {
-                        HStack{
-                            if language.femaleVoiceId != nil {
-                                Image(systemName: "figure.stand.dress")
-                                Text(voiceName(language.femaleVoiceId!))
-                            }
-                            if language.maleVoiceId != nil {
-                                Image(systemName: "figure.stand")
-                                Text(voiceName(language.maleVoiceId!))
-                            }
-                            Spacer()
-                        }
-                    }
-                }
-            }
-        }
-        .navigationTitle("Languages")
-    }
-}
