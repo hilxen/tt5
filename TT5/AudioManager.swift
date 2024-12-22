@@ -25,6 +25,10 @@ extension String {
         }
         return result
     }
+    
+    func removeExtraSpaces() -> String {
+        return self.replacingOccurrences(of: "[\\s\n]+", with: " ", options: .regularExpression, range: nil)
+    }
 }
 
 
@@ -106,6 +110,22 @@ final class AudioManager: NSObject, ObservableObject {
         do {
             try session.overrideOutputAudioPort(.speaker)
         } catch _ {}
+    }
+    
+    func removeExcessiveEmotes(item: Item) -> String {
+        let maxAllowedEmotes = 2
+        var result = Array(item.message)
+        if item.emotes.count > maxAllowedEmotes {
+            var coutedEmotes = 0
+            for emote in item.emotes {
+                if coutedEmotes >= maxAllowedEmotes {
+                    result.removeSubrange((emote.start)..<(emote.end + 1))
+                    result.insert(contentsOf: Array(String(repeating: " ", count: emote.end - emote.start + 1)), at: emote.start)
+                }
+                coutedEmotes += 1
+            }
+        }
+        return String(result).removeExtraSpaces()
     }
     
     func replaceListedCharactersWithSpaces(_ text: String, charactersToReplace: CharacterSet) -> String {
@@ -213,10 +233,11 @@ final class AudioManager: NSObject, ObservableObject {
             }
         }
         activateSession()
-        let mappedText = replaceAtWords(text: item.message, nicks: nicks)
+        let mappedText1 = removeExcessiveEmotes(item: item)
+        let mappedText2 = replaceAtWords(text: mappedText1, nicks: nicks)
         let charactersToReplace = CharacterSet(charactersIn: "[]{}/|\\~^&;")
         let cleanedText = removeExtraRepetitions(
-            replaceListedCharactersWithSpaces(mappedText, charactersToReplace: charactersToReplace))
+            replaceListedCharactersWithSpaces(mappedText2, charactersToReplace: charactersToReplace))
         
         var volumeIndex = settings.volume + nick.volume!
         if volumeIndex < 0 { volumeIndex = 0 }

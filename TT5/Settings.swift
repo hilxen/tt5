@@ -143,6 +143,7 @@ final class Settings {
 
 @Model
 final class Nick: Identifiable {
+    @Attribute(.unique)
     var name: String
     var defaults: Bool
     var muted: Bool

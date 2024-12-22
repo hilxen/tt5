@@ -17,7 +17,7 @@ import AVFoundation
 
 class Model: ObservableObject {
     @Published var list = [Item]()
-    @Published var newNicks = [Nick]()
+    @Published var newNicks = [String: Nick]()
     @Published var shouldRefresh = CurrentValueSubject<Bool, Never>(false)
 }
 
@@ -53,6 +53,7 @@ struct ContentView: View, TwitchIRCDelegate {
     
     func onAppear() {
         initSettings()
+        
         let _settings = settings.first!
         if twitchIRC.isConnected() && twitchIRC.channel != _settings.channel {
             twitchIRC.join(channel: _settings.channel)
@@ -94,7 +95,7 @@ struct ContentView: View, TwitchIRCDelegate {
             nick.subscriber = pm.isSubscriber
             nick.mod = pm.isMod
             nick.broadcaster = pm.isBroadcaster
-            addItem(nick: nick, text: pm.message, messageId: pm.messageId)
+            addItem(nick: nick, message: pm)
         }
     }
     
@@ -108,7 +109,7 @@ struct ContentView: View, TwitchIRCDelegate {
     func getNick(name: String) -> Nick {
         print("get nick \(name)")
         let _settings = settings.first!
-        if let nick = nicks.first(where: {$0.name == name}) {
+        if let nick = nicks.first(where: {$0.name == name}) ?? model.newNicks[name] {
             if nick.defaults {
                 nick.muted = _settings.muted
                 nick.volume = Volume.normal.rawValue
@@ -128,22 +129,22 @@ struct ContentView: View, TwitchIRCDelegate {
             nick.rate = _settings.rate
             nick.pitch = _settings.pitch
             nick.voice = _settings.voice
-            model.newNicks.append(Nick(name: name, muted: _settings.muted))
+            model.newNicks[name] = Nick(name: name, muted: _settings.muted)
             return nick
         }
     }
     
     func saveNewNicks() {
-        for nick in model.newNicks {
+        for nick in model.newNicks.values {
             modelContext.insert(nick)
             print("Saved new nick", nick.name)
         }
         model.newNicks.removeAll()
     }
     
-    func addItem(nick: Nick, text: String, messageId: String) {
+    func addItem(nick: Nick, message: PrivateMessage) {
         print("addItem model.list.count=\(model.list.count)")
-        let item = Item(nick: nick, message: text, messageId: messageId)
+        let item = Item(nick: nick, message: message.message, messageId: message.messageId, emotes: message.emotes)
         model.list.append(item)
         let bots = ["", "nightbot", "moobot", "streamelements"]  // move to settings
         if !bots.contains(nick.name.lowercased()) {

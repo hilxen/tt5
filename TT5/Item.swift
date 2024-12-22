@@ -8,17 +8,55 @@
 import Foundation
 import SwiftData
 
+@Model
+final class Emote {
+    var id: String
+    var start: Int
+    var end: Int
+    init(id: String, start: Int, end: Int) {
+        self.id = id
+        self.start = start
+        self.end = end
+    }
+}
 
 @Model
 final class Item {
     var nick: Nick
     var message: String
     var messageId: String
+    var emotesStr: String
+    var emotes: [Emote]
     var skipped: Bool = false
     
-    init(nick: Nick, message: String, messageId: String) {
+    init(nick: Nick, message: String, messageId: String, emotes: String) {
         self.nick = nick
         self.message = message
         self.messageId = messageId
+        self.emotesStr = emotes
+        self.emotes = Item.parseEmotes(emotesStr: emotes)
+    }
+    
+    static func parseEmotes(emotesStr: String) -> [Emote] {
+        var result: [Emote] = []
+        // Split the string by '/' to separate different emotes
+        let emoteComponents = emotesStr.components(separatedBy: "/")
+        for component in emoteComponents {
+            // Split each component into identifier and range parts
+            let parts = component.components(separatedBy: ":")
+            if parts.count == 2 {
+                let id = parts[0]
+                let ranges = parts[1].components(separatedBy: ",")
+                for range in ranges {
+                    let positions = range.components(separatedBy: "-")
+                    if positions.count == 2,
+                       let start = Int(positions[0]),
+                       let end = Int(positions[1]) {
+                        result.append(Emote(id: id, start: start, end: end))
+                    }
+                }
+            }
+        }
+        return result
     }
 }
