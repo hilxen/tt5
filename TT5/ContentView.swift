@@ -62,8 +62,16 @@ struct ContentView: View, TwitchIRCDelegate {
         }
         //model.shouldRefresh.send(true)
         audioManager.contentViewActive = true
+        audioManager.speechTools.recognizer.languageConstraints = enabledLanguages.map({NLLanguage($0.languageCode())})
         
-        
+        var enabledVoices = [String: [String: String]]()
+        for language in enabledLanguages {
+            enabledVoices[language.languageCode()] = [
+                "female": language.femaleVoiceId ?? language.maleVoiceId!,
+                "male": language.maleVoiceId ?? language.femaleVoiceId!
+            ]
+        }
+        audioManager.speechTools.voices = enabledVoices
     }
     
     func onDisappear() {
@@ -201,12 +209,11 @@ struct ContentView: View, TwitchIRCDelegate {
                                         }
                                         Text(item.nick.name).foregroundStyle(item.nick.getColor()).bold().padding(.leading, 2)
                                     }
-                                    Text(item.message)
+                                    Text(item.message).multilineTextAlignment(.leading)
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .font(.system(size: scale))
                                 .padding(.bottom, 2).padding(.top, 0)
-                                //.overlay(Divider(), alignment: .bottom)
                             }.accentColor(Color.black)
                         }
                     }

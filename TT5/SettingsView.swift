@@ -56,7 +56,7 @@ struct SettingsView: View {
                         Image(systemName: "person.2.wave.2.fill")
                         VStack (alignment: .leading) {
                             ForEach(enabledLanguages) { language in
-                                Text(Locale.current.localizedString(forIdentifier: language.name)!)
+                                Text(language.displayName())
                             }
                         }.padding(.leading, 0)
                     }

@@ -242,6 +242,14 @@ final class Language: Identifiable {
         self.name = name
         self.enabled = enabled
     }
+    
+    func displayName() -> String {
+        return Locale.current.localizedString(forIdentifier: name)!
+    }
+    
+    func languageCode() -> String {
+        return name.components(separatedBy: "-")[0]
+    }
 }
 
 struct VoiceId: Codable, Hashable, Identifiable {

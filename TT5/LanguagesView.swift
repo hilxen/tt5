@@ -106,7 +106,7 @@ struct VoiceIdsView: View {
                     }
                 }
             }
-        }.navigationTitle(Locale.current.localizedString(forIdentifier: language.name)!)
+        }.navigationTitle(language.displayName())
     }
 }
 
@@ -126,7 +126,7 @@ struct LanguagesView: View {
             List(languages) {language in
                 VStack{
                     HStack{
-                        Text(Locale.current.localizedString(forIdentifier: language.name)!)
+                        Text(language.displayName())
                             .lineLimit(1)
                             .truncationMode(.tail)
                         Spacer()
@@ -134,7 +134,7 @@ struct LanguagesView: View {
                             get: { return language.enabled },
                             set: { (newValue) in
                                 if let l = languages.first(where: {
-                                    $0.enabled && $0.name.components(separatedBy: "-")[0] == language.name.components(separatedBy: "-")[0]}) {
+                                    $0.enabled && $0.languageCode() == language.languageCode()}) {
                                     l.enabled = false
                                 }
                                 return language.enabled = newValue}

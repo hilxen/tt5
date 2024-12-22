@@ -35,37 +35,13 @@ extension String {
 class SpeechTools {
     let recognizer = NLLanguageRecognizer()
     let synthesizer = AVSpeechSynthesizer()
+    var voices: [String: [String: String]] = [:]
 }
 
 
 final class AudioManager: NSObject, ObservableObject {
     static let shared = AudioManager()
     let speechTools = SpeechTools()
-    let languages: [NLLanguage: String] = [
-            .english: "en-US",
-            .russian: "ru-RU",
-//            .german: "de-DE",
-//            .italian: "it-IT",
-//            .french: "fr-FR",
-//            .spanish: "es-ES"
-    ]
-    let voices = [
-        "de": ["female": "com.apple.ttsbundle.siri_Helena_de-DE_compact", "male": "com.apple.ttsbundle.siri_Martin_de-DE_compact"],
-        "fr": ["female": "com.apple.ttsbundle.siri_Marie_fr-FR_compact", "male": "com.apple.voice.compact.fr-FR.Thomas"],
-        "it": ["female": "com.apple.voice.compact.it-IT.Alice", "male": "com.apple.eloquence.it-IT.Rocko"],
-        "en": ["female": "com.apple.voice.compact.en-US.Samantha", "male": "com.apple.speech.synthesis.voice.Fred"],
-        "es": ["female": "com.apple.voice.compact.es-ES.Monica", "male": "com.apple.eloquence.es-ES.Rocko"],
-        "ru": ["female": "com.apple.voice.compact.ru-RU.Milena", "male": "com.apple.voice.compact.ru-RU.Milena"],
-    ]
-//    it-IT female com.apple.voice.compact.it-IT.Alice
-//    fr-FR female com.apple.ttsbundle.siri_Marie_fr-FR_compact
-//    de-DE female com.apple.ttsbundle.siri_Helena_de-DE_compact
-//    de-DE female com.apple.voice.compact.de-DE.Anna
-//    ru-RU female com.apple.voice.compact.ru-RU.Milena
-//    en-US female com.apple.ttsbundle.siri_Nicky_en-US_compact
-//    en-US female com.apple.voice.compact.en-US.Samantha
-//    es-ES female com.apple.voice.compact.es-ES.Monica
-
     private var player: AVQueuePlayer?
     private var session = AVAudioSession.sharedInstance()
     private var volume: Int = 5
@@ -81,35 +57,16 @@ final class AudioManager: NSObject, ObservableObject {
     override init() {
         super.init()
         speechTools.synthesizer.delegate = self
-        speechTools.recognizer.languageConstraints = Array(languages.keys)
-        let supportedVoices = AVSpeechSynthesisVoice.speechVoices() //list of supported voices
-        for (_, locale) in languages {
-            for supportedVoice in supportedVoices {
-                if supportedVoice.language == locale /* && (supportedVoice.gender == .female || supportedVoice.gender == .male) */ {
-                    let gender = supportedVoice.gender == .female ? "female" : supportedVoice.gender == .male ? "male" : "unknown"
-                    print(locale, gender, supportedVoice.identifier)
-                }
-            }
-        }
-        print("min rate", AVSpeechUtteranceMinimumSpeechRate, "default", AVSpeechUtteranceDefaultSpeechRate, "max rate", AVSpeechUtteranceMaximumSpeechRate)
     }
     
     private func activateSession() {
-        do {
-            try session.setCategory(
-                .playback,
-                mode: .default,
-                options: [.duckOthers]
-            )
-        } catch _ {}
-        
-        do {
-            try session.setActive(true, options: .notifyOthersOnDeactivation)
-        } catch _ {}
-        
-        do {
-            try session.overrideOutputAudioPort(.speaker)
-        } catch _ {}
+        try? session.setCategory(
+            .playback,
+            mode: .default,
+            options: [.duckOthers]
+        )
+        try? session.setActive(true, options: .notifyOthersOnDeactivation)
+        try? session.overrideOutputAudioPort(.speaker)
     }
     
     func removeExcessiveEmotes(item: Item) -> String {
@@ -249,13 +206,16 @@ final class AudioManager: NSObject, ObservableObject {
         let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
         print(ssml)
         let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
-        
         utterance.prefersAssistiveTechnologySettings = true
-        //utterance.volume = volumes[volumeIndex]
-        speechTools.recognizer.processString(cleanedText)
-        let language = speechTools.recognizer.dominantLanguage?.rawValue ?? "en"
-        let voiceId = voices[language]![nick.voice!]
-        utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId!)
+        var voiceId: String
+        if speechTools.recognizer.languageConstraints.count > 1 {
+            speechTools.recognizer.processString(cleanedText)
+            let language = speechTools.recognizer.dominantLanguage?.rawValue ?? speechTools.recognizer.languageConstraints.first!.rawValue
+            voiceId = speechTools.voices[language]?[nick.voice!] ?? speechTools.voices.values.first?[nick.voice!] ?? "com.apple.voice.compact.en-US.Samantha"
+        } else {
+            voiceId = speechTools.voices.values.first?[nick.voice!] ?? "com.apple.voice.compact.en-US.Samantha"
+        }
+        utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId)
         utterances[utterance] = nick
         print("queued speech", nick.name, nick.voice!, "volume", ssmlVolume, "rate", ssmlRate, "pitch", ssmlPitch, "queue size", utterances.count)
         speechTools.synthesizer.speak(utterance)
