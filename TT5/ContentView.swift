@@ -34,7 +34,6 @@ struct ContentView: View, TwitchIRCDelegate {
     @State private var vibrate: Bool = false
     @ObservedObject private var model = Model()
     @ObservedObject private var audioManager: AudioManager = AudioManager.shared
-    //@State private var simpleModelActor: SimpleModelActor!
     
     let maxMessages: Int = 20
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -179,12 +178,12 @@ struct ContentView: View, TwitchIRCDelegate {
                     LazyVStack {
                         // Array(model.list.enumerated()), id: \.offset) is needed for auto scroll
                         ForEach(Array(model.list.enumerated()), id: \.offset) { index, item in
-                            VStack(alignment: .leading, spacing: 0) {
-                                NavigationLink(destination: NickView(nick: item.nick)) {
+                            NavigationLink(destination: NickView(nick: item.nick)) {
+                                VStack(alignment: .leading, spacing: 0) {
                                     HStack(spacing: 1) {
                                         let icon = item.skipped ? "play.slash"
-                                            : (item.nick.muted != settings.first!.muted)
-                                            ? (item.nick.muted ? "speaker.slash": "speaker") : ""
+                                        : (item.nick.muted != settings.first!.muted)
+                                        ? (item.nick.muted ? "speaker.slash": "speaker") : ""
                                         if icon != "" {
                                             Image(systemName: icon)
                                         }
@@ -202,18 +201,13 @@ struct ContentView: View, TwitchIRCDelegate {
                                         }
                                         Text(item.nick.name).foregroundStyle(item.nick.getColor()).bold().padding(.leading, 2)
                                     }
+                                    Text(item.message)
                                 }
-                                Text(item.message)
-                                    .onTapGesture {
-                                        playText(item: item)
-                                        vibrate.toggle()
-                                    }
-                                    .sensoryFeedback(.success, trigger: vibrate)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .font(.system(size: scale))
-                            .padding(.bottom, 2).padding(.top, 0)
-                            //.overlay(Divider(), alignment: .bottom)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .font(.system(size: scale))
+                                .padding(.bottom, 2).padding(.top, 0)
+                                //.overlay(Divider(), alignment: .bottom)
+                            }.accentColor(Color.black)
                         }
                     }
                 }
@@ -315,24 +309,6 @@ struct ContentView: View, TwitchIRCDelegate {
         }
     }
 }
-
-//final actor SimpleModelActor: ModelActor {
-//    let modelExecutor: any ModelExecutor
-//    let modelContainer: ModelContainer
-//    let context: ModelContext
-//    
-//    init(modelContainer: ModelContainer) {
-//        self.modelContainer = modelContainer
-//        self.context = ModelContext(modelContainer)
-//        self.modelExecutor = DefaultSerialModelExecutor(modelContext: context)
-//    }
-//    
-//    func insert(nick: Nick) {
-//        context.insert(nick)
-//        try! context.save() // this does not impact a re-display by the @Query in ContentView. I would have expected it to cause a view redraw.
-//    }
-//}
-
     
 #Preview {
     ContentView()

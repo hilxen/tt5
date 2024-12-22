@@ -13,7 +13,7 @@ struct NickView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var settings: [Settings]
     @Query private var nicks: [Nick]
-    let nick: Nick
+    @State var nick: Nick
     @State var muted: Bool = false
     @State var pronunciation: String = ""
     @State var overrideDefaults: Bool = false
@@ -25,6 +25,7 @@ struct NickView: View {
     let minVolume: Int = 0
     let maxVolume: Int = 10
     
+
     var body: some View {
         VStack(
             alignment: .leading,
