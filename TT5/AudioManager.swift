@@ -45,7 +45,7 @@ final class AudioManager: NSObject, ObservableObject {
     private var player: AVQueuePlayer?
     private var session = AVAudioSession.sharedInstance()
     private var volume: Int = 5
-    let volumes: [Float] = [0.005, 0.02, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32]
+    let volumes: [Float] = [0.01, 0.0151, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32, 64]
     let ssmlVolumes: [String] = ["silent", "-36dB", "-27dB", "-18dB", "-9dB", "+0dB", "+9dB", "+18dB", "+27dB", "+36dB", "+45dB"]
 
     var utterances: [AVSpeechUtterance: Nick] = [:]
@@ -206,7 +206,11 @@ final class AudioManager: NSObject, ObservableObject {
         let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
         print(ssml)
         let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
-        utterance.prefersAssistiveTechnologySettings = true
+//        let utterance = AVSpeechUtterance(string: "\(nick.pronunciationOfName()) \(cleanedText)")
+//        utterance.rate = nick.rate!
+//        utterance.pitchMultiplier = nick.pitch!
+//        utterance.prefersAssistiveTechnologySettings = true
+//        utterance.volume = volumes[volumeIndex]
         var voiceId: String
         if speechTools.recognizer.languageConstraints.count > 1 {
             speechTools.recognizer.processString(cleanedText)
@@ -217,7 +221,11 @@ final class AudioManager: NSObject, ObservableObject {
         }
         utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId)
         utterances[utterance] = nick
-        print("queued speech", nick.name, nick.voice!, "volume", ssmlVolume, "rate", ssmlRate, "pitch", ssmlPitch, "queue size", utterances.count)
+        print("queued speech", nick.name, nick.voice!,
+              "volume", ssmlVolume, volumes[volumeIndex],
+              "rate", ssmlRate, nick.rate!,
+              "pitch", ssmlPitch, nick.pitch!,
+              "queue size", utterances.count)
         speechTools.synthesizer.speak(utterance)
     }
     
