@@ -45,7 +45,7 @@ final class AudioManager: NSObject, ObservableObject {
     private var player: AVQueuePlayer?
     private var session = AVAudioSession.sharedInstance()
     private var volume: Int = 5
-    let volumes: [Float] = [0.005, 0.02, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32, 64]
+    let volumes: [Float] = [0.005, 0.02, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32]
     let ssmlVolumes: [String] = ["silent", "-36dB", "-27dB", "-18dB", "-9dB", "+0dB", "+9dB", "+18dB", "+27dB", "+36dB", "+45dB"]
 
     var utterances: [AVSpeechUtterance: Nick] = [:]

@@ -32,6 +32,7 @@ struct ContentView: View, TwitchIRCDelegate {
     @State private var showHelp = false
     @State private var scale = 18.0
     @State private var vibrate: Bool = false
+    @State private var previousChannel: String = ""
     @ObservedObject private var model = Model()
     @ObservedObject private var audioManager: AudioManager = AudioManager.shared
     
@@ -44,7 +45,7 @@ struct ContentView: View, TwitchIRCDelegate {
     
     func initSettings() {
         if settings.isEmpty {
-            modelContext.insert(Settings(channel: "", volume: 5, muted: false, rate: .normal, pitch: .normal, voice: .female,
+            modelContext.insert(Settings(channel: "", volume: 1, muted: false, rate: .normal, pitch: .normal, voice: .female,
                                          mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true))
             try! modelContext.save()
         }
@@ -72,6 +73,11 @@ struct ContentView: View, TwitchIRCDelegate {
             ]
         }
         audioManager.speechTools.voices = enabledVoices
+        if previousChannel != settings.first!.channel {
+            model.shouldRefresh.send(true)
+            previousChannel = settings.first!.channel
+            model.list.removeAll()
+        }
     }
     
     func onDisappear() {

@@ -12,11 +12,11 @@ import AVFoundation
 
 
 struct SettingsView: View {
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    @Environment(\.presentationMode) var presentation
     @Environment(\.modelContext) private var modelContext
     @Query private var settings: [Settings]
     @Query private var languages: [Language]
-    
+    @Query private var channels: [Channel]
     @State private var volume: Int = 0
     @State private var channel: String = ""
     @State private var muted: Bool = false
@@ -47,6 +47,12 @@ struct SettingsView: View {
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.black)
                     .padding(.horizontal, 10)
+                NavigationLink(destination: ChannelsListView()) {
+                    Image(systemName: "folder")
+                        .resizable()
+                        .frame(width: 32, height: 25)
+                        .padding(.trailing, 10)
+                }
             }.padding(.vertical, 10)
                 .padding(.leading, 15)
                 .padding(.trailing, 5)
@@ -209,7 +215,12 @@ struct SettingsView: View {
         self.settings.first!.subscribers = subscribers
         self.settings.first!.broadcaster = broadcaster
         self.settings.first!.highlighted = highlighted
+        let normalizedChannel = channel.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if !normalizedChannel.isEmpty && !channels.contains(where: {$0.name == normalizedChannel}) {
+            modelContext.insert(Channel(name: normalizedChannel))
+        }
         try! modelContext.save()
+        presentation.wrappedValue.dismiss()
     }
     
     func initLanguages() {

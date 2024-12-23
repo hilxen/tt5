@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		E50996FA2D17D99B008ED3F5 /* LanguagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50996F92D17D994008ED3F5 /* LanguagesView.swift */; };
+		E50996FC2D19F312008ED3F5 /* ChannelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50996FB2D19F30D008ED3F5 /* ChannelsView.swift */; };
 		E50E67B12CFCBBE400654252 /* TT5App.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E67B02CFCBBE400654252 /* TT5App.swift */; };
 		E50E67B32CFCBBE400654252 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E67B22CFCBBE400654252 /* ContentView.swift */; };
 		E50E67B52CFCBBE400654252 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E67B42CFCBBE400654252 /* Item.swift */; };
@@ -29,6 +30,7 @@
 
 /* Begin PBXFileReference section */
 		E50996F92D17D994008ED3F5 /* LanguagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguagesView.swift; sourceTree = "<group>"; };
+		E50996FB2D19F30D008ED3F5 /* ChannelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsView.swift; sourceTree = "<group>"; };
 		E50E67AD2CFCBBE300654252 /* TT5.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TT5.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E50E67B02CFCBBE400654252 /* TT5App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TT5App.swift; sourceTree = "<group>"; };
 		E50E67B22CFCBBE400654252 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -83,6 +85,7 @@
 		E50E67AF2CFCBBE300654252 /* TT5 */ = {
 			isa = PBXGroup;
 			children = (
+				E50996FB2D19F30D008ED3F5 /* ChannelsView.swift */,
 				E50996F92D17D994008ED3F5 /* LanguagesView.swift */,
 				E57D6DF12D1513D10030CBE6 /* HelpView.swift */,
 				E57D6DEF2D14EDB50030CBE6 /* NickListView.swift */,
@@ -206,6 +209,7 @@
 				E50E67B52CFCBBE400654252 /* Item.swift in Sources */,
 				E57D6DF02D14EDC10030CBE6 /* NickListView.swift in Sources */,
 				E57D6DE92D124A200030CBE6 /* NickView.swift in Sources */,
+				E50996FC2D19F312008ED3F5 /* ChannelsView.swift in Sources */,
 				E50E67B12CFCBBE400654252 /* TT5App.swift in Sources */,
 				E57D6DE72D0FA89D0030CBE6 /* TwitchPlayer.swift in Sources */,
 				E50996FA2D17D99B008ED3F5 /* LanguagesView.swift in Sources */,
