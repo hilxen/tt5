@@ -18,13 +18,16 @@ struct HelpView: View {
 <body style="font-family: arial">
 <p>
     A text to speech app for Twitch. Reads comments posted to a channel.
-    Useful for both channel owners and viewer so they do not need to read comments from the screen,
+    The app is useful for both channel owners and viewers, so they do not need to read comments from the screen,
     but instead use earpiece or speaker.
 </p>
 <p>
     The app can be put into background, so you can run other streaming apps like PRISM Live at the same time,
     or simply put your phone in a pocket
 </p>
+<p>
+    <a href="https://youtu.be/NGAhAvaZAsQ">View short demo</a>
+<p>
 <h3>Features</h3>
 <ul>
     <li>

@@ -159,10 +159,7 @@ struct ContentView: View, TwitchIRCDelegate {
         print("addItem model.list.count=\(model.list.count)")
         let item = Item(nick: nick, message: message.message, messageId: message.messageId, emotes: message.emotes)
         model.list.append(item)
-        let bots = ["", "nightbot", "moobot", "streamelements"]  // move to settings
-        if !bots.contains(nick.name.lowercased()) {
-            playText(item: item)
-        }
+        playText(item: item)
         if model.list.count > maxMessages {
             model.list.removeFirst()
         }

@@ -43,6 +43,7 @@ struct SettingsView: View {
                 Text("Channel")
                 Spacer()
                 TextField("Channel Name", text: $channel)
+                    .disableAutocorrection(true)
                     .padding(5)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.black)
