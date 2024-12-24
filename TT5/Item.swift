@@ -8,7 +8,6 @@
 import Foundation
 import SwiftData
 
-@Model
 final class Emote {
     var id: String
     var start: Int
@@ -20,8 +19,9 @@ final class Emote {
     }
 }
 
-@Model
-final class Item {
+
+final class Item : Equatable {
+    var id: String
     var nick: Nick
     var message: String
     var messageId: String
@@ -29,7 +29,12 @@ final class Item {
     var emotes: [Emote]
     var skipped: Bool = false
     
-    init(nick: Nick, message: String, messageId: String, emotes: String) {
+    static func ==(lhs: Item, rhs: Item) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
+    init(id: String, nick: Nick, message: String, messageId: String, emotes: String) {
+        self.id = id
         self.nick = nick
         self.message = message
         self.messageId = messageId

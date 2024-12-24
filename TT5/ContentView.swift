@@ -108,7 +108,15 @@ struct ContentView: View, TwitchIRCDelegate {
             nick.subscriber = pm.isSubscriber
             nick.mod = pm.isMod
             nick.broadcaster = pm.isBroadcaster
-            addItem(nick: nick, message: pm)
+            print("addItem model.list.count=\(model.list.count)")
+            let item = Item(id: pm.id, nick: nick, message: pm.message, messageId: pm.messageId, emotes: pm.emotes)
+            model.list.append(item)
+            if model.list.count > maxMessages {
+                model.list.removeFirst()
+            }
+            DispatchQueue.global(qos: .background).async {
+                audioManager.textToSpeech(settings: settings.first!, nicks: nicks, item: item)
+            }
         }
     }
     
@@ -155,28 +163,7 @@ struct ContentView: View, TwitchIRCDelegate {
         model.newNicks.removeAll()
     }
     
-    func addItem(nick: Nick, message: PrivateMessage) {
-        print("addItem model.list.count=\(model.list.count)")
-        let item = Item(nick: nick, message: message.message, messageId: message.messageId, emotes: message.emotes)
-        model.list.append(item)
-        playText(item: item)
-        if model.list.count > maxMessages {
-            model.list.removeFirst()
-        }
-    }
-
-    
-    func playText(item: Item) {
-        audioManager.textToSpeech(settings: settings.first!, nicks: nicks, item: item)
-//        let textEncoded = text.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
-//        let url = "https://ancq5cs6vo5xysowyp6qttq2he0aexqb.lambda-url.us-west-1.on.aws/"
-//        + "?language-code=ru-RU"
-//        + "&voice-id=Tatyana"
-//        + "&username=\(nick)"
-//        + "&text=\(textEncoded)"
-//        audioManager.startAudio(url: url)
-    }
-    
+        
     var body: some View {
         NavigationStack {
             if !settings.isEmpty && !settings.first!.channel.isEmpty {
@@ -262,7 +249,7 @@ struct ContentView: View, TwitchIRCDelegate {
                     Button {
                         model.shouldRefresh.send(true)
                     } label: {
-                        Image(systemName: "arrow.trianglehead.clockwise")
+                        Image(systemName: "arrow.clockwise")
                     }
                     Button {
                         showSettings = true

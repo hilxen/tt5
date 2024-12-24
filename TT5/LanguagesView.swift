@@ -70,9 +70,9 @@ struct VoiceIdsView: View {
                 .padding(.trailing, 5)
             List(language.voiceIds) { voiceId in
                 HStack {
-                    Image(systemName: voiceId.gender == "female"
+                    Image(voiceId.gender == "female"
                           ? "figure.stand.dress" : voiceId.gender == "male"
-                          ? "figure.stand" : "figure.stand.dress.line.vertical.figure"
+                          ? "figure.stand" : "figure.dress.line.vertical.figure"
                     )
                     Text(voiceName(voiceId.id))
                     Image(systemName: "play.circle")
@@ -100,9 +100,9 @@ struct VoiceIdsView: View {
                             }
                         }
                     } label: {
-                        Image(systemName: language.femaleVoiceId == voiceId.id
+                        Image(language.femaleVoiceId == voiceId.id
                               ? "figure.stand.dress" : language.maleVoiceId == voiceId.id
-                              ? "figure.stand" : "viewfinder").resizable().frame(width: 32, height: 32)
+                              ? "figure.stand" : "viewfinder")
                     }
                 }
             }
@@ -143,11 +143,11 @@ struct LanguagesView: View {
                     NavigationLink(destination: VoiceIdsView(language: language)) {
                         HStack{
                             if language.femaleVoiceId != nil {
-                                Image(systemName: "figure.stand.dress")
+                                Image("figure.stand.dress")
                                 Text(voiceName(language.femaleVoiceId!))
                             }
                             if language.maleVoiceId != nil {
-                                Image(systemName: "figure.stand")
+                                Image("figure.stand")
                                 Text(voiceName(language.maleVoiceId!))
                             }
                         }
