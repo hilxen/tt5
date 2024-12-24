@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		E50996FA2D17D99B008ED3F5 /* LanguagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50996F92D17D994008ED3F5 /* LanguagesView.swift */; };
 		E50996FC2D19F312008ED3F5 /* ChannelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50996FB2D19F30D008ED3F5 /* ChannelsView.swift */; };
+		E50996FE2D1A91FD008ED3F5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E50996FD2D1A91FD008ED3F5 /* LaunchScreen.storyboard */; };
 		E50E67B12CFCBBE400654252 /* TT5App.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E67B02CFCBBE400654252 /* TT5App.swift */; };
 		E50E67B32CFCBBE400654252 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E67B22CFCBBE400654252 /* ContentView.swift */; };
 		E50E67B52CFCBBE400654252 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E67B42CFCBBE400654252 /* Item.swift */; };
@@ -31,6 +32,7 @@
 /* Begin PBXFileReference section */
 		E50996F92D17D994008ED3F5 /* LanguagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguagesView.swift; sourceTree = "<group>"; };
 		E50996FB2D19F30D008ED3F5 /* ChannelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsView.swift; sourceTree = "<group>"; };
+		E50996FD2D1A91FD008ED3F5 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E50E67AD2CFCBBE300654252 /* TT5.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TT5.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E50E67B02CFCBBE400654252 /* TT5App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TT5App.swift; sourceTree = "<group>"; };
 		E50E67B22CFCBBE400654252 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 				E5B9951B2D0522E500BE7865 /* WebSocketConnection.swift */,
 				E5B995222D0579CD00BE7865 /* AudioManager.swift */,
 				E5B995402D06730700BE7865 /* Settings.swift */,
+				E50996FD2D1A91FD008ED3F5 /* LaunchScreen.storyboard */,
 			);
 			path = TT5;
 			sourceTree = "<group>";
@@ -189,6 +192,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E50996FE2D1A91FD008ED3F5 /* LaunchScreen.storyboard in Resources */,
 				E50E67BA2CFCBBE600654252 /* Preview Assets.xcassets in Resources */,
 				E50E67B72CFCBBE600654252 /* Assets.xcassets in Resources */,
 			);
@@ -355,7 +359,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = TT5;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -390,7 +394,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = TT5;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
