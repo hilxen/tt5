@@ -114,8 +114,9 @@ struct ContentView: View, TwitchIRCDelegate {
             if model.list.count > maxMessages {
                 model.list.removeFirst()
             }
+            let copyOfSettings = Settings(settings.first!)
             DispatchQueue.global(qos: .background).async {
-                audioManager.textToSpeech(settings: settings.first!, nicks: nicks, item: item)
+                audioManager.textToSpeech(settings: copyOfSettings, nicks: nicks, item: item)
             }
         }
     }

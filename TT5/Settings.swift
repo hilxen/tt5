@@ -125,18 +125,32 @@ final class Settings {
         self.highlighted = highlighted
     }
     
-    func set(_settings: Settings) {
-        self.channel = _settings.channel
-        self.volume = _settings.volume
-        self.muted = _settings.muted
-        self.rate = _settings.rate
-        self.pitch = _settings.pitch
-        self.voice = _settings.voice
-        self.mods = _settings.mods
-        self.vips = _settings.vips
-        self.subscribers = _settings.subscribers
-        self.broadcaster = _settings.broadcaster
-        self.highlighted = _settings.highlighted
+    init(_ copy: Settings) {
+        self.channel = copy.channel
+        self.volume = copy.volume
+        self.muted = copy.muted
+        self.rate = copy.rate
+        self.pitch = copy.pitch
+        self.voice = copy.voice
+        self.mods = copy.mods
+        self.vips = copy.vips
+        self.subscribers = copy.subscribers
+        self.broadcaster = copy.broadcaster
+        self.highlighted = copy.highlighted
+    }
+    
+    func set(_ copy: Settings) {
+        self.channel = copy.channel
+        self.volume = copy.volume
+        self.muted = copy.muted
+        self.rate = copy.rate
+        self.pitch = copy.pitch
+        self.voice = copy.voice
+        self.mods = copy.mods
+        self.vips = copy.vips
+        self.subscribers = copy.subscribers
+        self.broadcaster = copy.broadcaster
+        self.highlighted = copy.highlighted
     }
 }
 
