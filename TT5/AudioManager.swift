@@ -48,8 +48,8 @@ final class AudioManager: NSObject, ObservableObject {
     let volumes: [Float] = [0.01, 0.0151, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32, 64]
     let ssmlVolumes: [String] = ["silent", "-36dB", "-27dB", "-18dB", "-9dB", "+0dB", "+9dB", "+18dB", "+27dB", "+36dB", "+45dB"]
 
-    var utterances: [AVSpeechUtterance: Nick] = [:]
-    @Published var speakerNick: Nick?
+    var utterances: [AVSpeechUtterance: Item] = [:]
+    @Published var speakerItem: Item?
     @Published var speakerActive: Bool = false
     @Published var speakerCountdown: Int = -1
     var contentViewActive: Bool = false
@@ -189,7 +189,6 @@ final class AudioManager: NSObject, ObservableObject {
                 return
             }
         }
-        activateSession()
         let mappedText1 = removeExcessiveEmotes(item: item)
         let mappedText2 = replaceAtWords(text: mappedText1, nicks: nicks)
         let charactersToReplace = CharacterSet(charactersIn: "[]{}/|\\~^&;")
@@ -205,12 +204,7 @@ final class AudioManager: NSObject, ObservableObject {
         let ssmlVolume = ssmlVolumes[volumeIndex]
         let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
         print(ssml)
-        let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
-//        let utterance = AVSpeechUtterance(string: "\(nick.pronunciationOfName()) \(cleanedText)")
-//        utterance.rate = nick.rate!
-//        utterance.pitchMultiplier = nick.pitch!
-//        utterance.prefersAssistiveTechnologySettings = true
-//        utterance.volume = volumes[volumeIndex]
+
         var voiceId: String
         if speechTools.recognizer.languageConstraints.count > 1 {
             speechTools.recognizer.processString(cleanedText)
@@ -219,13 +213,22 @@ final class AudioManager: NSObject, ObservableObject {
         } else {
             voiceId = speechTools.voices.values.first?[nick.voice!] ?? "com.apple.voice.compact.en-US.Samantha"
         }
-        utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId)
-        utterances[utterance] = nick
         print("queued speech", nick.name, nick.voice!,
               "volume", ssmlVolume, volumes[volumeIndex],
               "rate", ssmlRate, nick.rate!,
               "pitch", ssmlPitch, nick.pitch!,
               "queue size", utterances.count)
+        
+        DispatchQueue.global(qos: .background).async {
+            self.speak(item: item, voiceId: voiceId, ssml: ssml)
+        }
+    }
+    
+    func speak(item: Item, voiceId: String, ssml: String) {
+        activateSession()
+        let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
+        utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId)
+        utterances[utterance] = item
         speechTools.synthesizer.speak(utterance)
     }
     
@@ -255,18 +258,18 @@ final class AudioManager: NSObject, ObservableObject {
 
 extension AudioManager: AVSpeechSynthesizerDelegate {
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
-        let nick = utterances[utterance]!
-        speakerNick = nick
+        let item = utterances[utterance]!
+        speakerItem = item
         if contentViewActive {
             speakerActive = true
         }
         speakerCountdown = -1
-        print("started speaking", nick.name, "queue size", utterances.count)
+        print("started speaking", item.nick.name, "queue size", utterances.count)
     }
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-        let nick = utterances.removeValue(forKey: utterance)!
+        let item = utterances.removeValue(forKey: utterance)!
         speakerCountdown = 2
-        print("stopped speaking", nick.name, "queue size", utterances.count)
+        print("stopped speaking", item.nick.name, "queue size", utterances.count)
     }
 }

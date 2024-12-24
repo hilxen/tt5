@@ -38,6 +38,7 @@ struct ContentView: View, TwitchIRCDelegate {
     
     let maxMessages: Int = 20
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    let itemHighlightColor = Color(red: 231/255, green: 211/255, blue: 253/255)
 
     init() {
         twitchIRC.delegate = self
@@ -100,6 +101,7 @@ struct ContentView: View, TwitchIRCDelegate {
         // twitchIRC.disconnect()
     }
     
+    
     func onMessage(pm: PrivateMessage) {
         DispatchQueue.main.async {
             let nick = getNick(name: pm.userLogin)
@@ -115,9 +117,7 @@ struct ContentView: View, TwitchIRCDelegate {
                 model.list.removeFirst()
             }
             let copyOfSettings = Settings(settings.first!)
-            DispatchQueue.global(qos: .background).async {
-                audioManager.textToSpeech(settings: copyOfSettings, nicks: nicks, item: item)
-            }
+            audioManager.textToSpeech(settings: copyOfSettings, nicks: nicks, item: item)
         }
     }
     
@@ -180,9 +180,10 @@ struct ContentView: View, TwitchIRCDelegate {
                             NavigationLink(destination: NickView(nick: item.nick)) {
                                 VStack(alignment: .leading, spacing: 0) {
                                     HStack(spacing: 1) {
-                                        let icon = item.skipped ? "play.slash"
-                                        : (item.nick.muted != settings.first!.muted)
-                                        ? (item.nick.muted ? "speaker.slash": "speaker") : ""
+                                        let mutedIcon = (item.nick.muted != settings.first!.muted)
+                                            ? (item.nick.muted ? "speaker.slash": "speaker") : ""
+                                        let icon = (mutedIcon == "speaker.slash")
+                                            ? mutedIcon : item.skipped ? "play.slash": mutedIcon
                                         if icon != "" {
                                             Image(systemName: icon)
                                         }
@@ -205,6 +206,7 @@ struct ContentView: View, TwitchIRCDelegate {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .font(.system(size: scale))
                                 .padding(.bottom, 2).padding(.top, 0)
+                                .background(item == audioManager.speakerItem ? itemHighlightColor: Color.clear)
                             }.accentColor(Color.black)
                         }
                     }
@@ -272,20 +274,18 @@ struct ContentView: View, TwitchIRCDelegate {
             }
         }.popup(isPresented: $audioManager.speakerActive) {
             ZStack {
-                if let speakerNick = audioManager.speakerNick {
+                if let speakerItem = audioManager.speakerItem {
                     RoundedRectangle(cornerRadius: 20)
                         .inset(by: 5) // inset value should be same as lineWidth in .stroke
                         .stroke(.gray, lineWidth: 5)
                         .frame(height: 100)
                         .background(Color.white)
-                    //NavigationLink(destination: NickView(nick: speakerNick)) {
-                        Text(speakerNick.name).font(.system(size: 50))
-                            .foregroundStyle(speakerNick.getColor())
+                    Text(speakerItem.nick.name).font(.system(size: 50))
+                            .foregroundStyle(speakerItem.nick.getColor())
                             .bold()
                             .lineLimit(1)
                             .minimumScaleFactor(0.5)
                             .padding(.horizontal, 20)
-                    //}
                 }
             }.padding(.top, 200)
             .onReceive(timer) { _ in
