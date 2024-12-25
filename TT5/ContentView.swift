@@ -206,7 +206,7 @@ struct ContentView: View, TwitchIRCDelegate {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .font(.system(size: scale))
                                 .padding(.bottom, 2).padding(.top, 0)
-                                .background(item == audioManager.speakerItem ? itemHighlightColor: Color.clear)
+                                .background(audioManager.speakerActive && item == audioManager.speakerItem ? itemHighlightColor: Color.clear)
                             }.accentColor(Color.black)
                         }
                     }
