@@ -189,6 +189,9 @@ struct SettingsView: View {
             broadcaster = settings.first!.broadcaster
             highlighted = settings.first!.highlighted
             initLanguages()
+            if (settings.first!.version ?? "") != getAppVersion() {
+                showHelp = true
+            }
         }.onDisappear {
             save()
         }

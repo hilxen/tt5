@@ -6,10 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 import WebKit
 
+func getAppVersion() -> String {
+    let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+    return appVersion ?? ""
+}
+
 struct HelpView: View {
-    
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.presentationMode) var presentation
+    @Query private var settings: [Settings]
+    @State var showOK = false
     @State var text = """
 <html>
 <head>
@@ -26,7 +35,12 @@ struct HelpView: View {
     or simply put your phone in a pocket
 </p>
 <p>
-    <a href="https://youtu.be/NGAhAvaZAsQ">View short demo</a>
+    How to put the app into background <a target="_blank" href="https://youtu.be/NGAhAvaZAsQ">watch this short demo</a>. 
+    Tap "play" button on stream preview, and then to view it in a popup. This puts the app into background! 
+    Now you can open other apps or lock your phone.
+</p>
+<p>
+    Tip: if you are a streamer you can prevent hearing yourself by increasing speech volume in settings or keep stream preview on mute  
 <p>
 <h3>Features</h3>
 <ul>
@@ -83,11 +97,7 @@ struct HelpView: View {
 </ul>
 </body></html>
 """
-    
-    func getVersion() -> String {
-        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        return appVersion ?? ""
-    }
+
     
     var body: some View {
         VStack(
@@ -96,7 +106,7 @@ struct HelpView: View {
         ) {
             HStack {
                 Image("logo").resizable().scaledToFit().frame(height: 50)
-                Text("TT5 for Twitch \(getVersion())").bold().font(.title)
+                Text("TT5 for Twitch \(getAppVersion())").bold().font(.title)
                 Spacer()
             }.padding(.vertical, 5).padding(.horizontal, 10)
             
@@ -104,6 +114,28 @@ struct HelpView: View {
                 .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 .padding(.vertical, 5).padding(.horizontal, 10)
             Spacer()
+            if showOK {
+                Button() {
+                    settings.first!.version = getAppVersion()
+                    try! modelContext.save()
+                    presentation.wrappedValue.dismiss()
+                } label: {
+                    Text("Got it!")
+                }
+                .buttonStyle(.borderedProminent)
+                .padding(.leading, 20)
+            }
+        }.onAppear {
+            showOK = (settings.first!.version ?? "") != getAppVersion()
+        }.toolbar {
+            if showOK {
+                HStack(spacing: 10) {
+                    Text("Scroll to read!").padding(.all, 10)
+                }.overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(Color(.orange), lineWidth: 5))
+               .padding(.all, 5)
+            }
         }
     }
 }

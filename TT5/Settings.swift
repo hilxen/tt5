@@ -109,6 +109,7 @@ final class Settings {
     var subscribers: Bool
     var broadcaster: Bool
     var highlighted: Bool
+    var version: String?
     
     init(channel: String, volume: Int, muted: Bool, rate: Rate, pitch: Pitch, voice: Voice,
          mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool) {
