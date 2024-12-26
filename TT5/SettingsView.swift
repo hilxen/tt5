@@ -9,6 +9,9 @@ import SwiftData
 import NaturalLanguage
 import AVFoundation
 
+func normalizeChannelName(_ channel: String) -> String {
+    return channel.components(separatedBy: "/").last!.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+}
 
 
 struct SettingsView: View {
@@ -30,6 +33,7 @@ struct SettingsView: View {
     @State var voice: Voice = .female
     @State private var showHelp = false
     @State var enabledLanguages: [Language] = []
+    @Binding var forceShowSettings: Bool
     let minVolume: Int = 0
     let maxVolume: Int = 10
     
@@ -47,7 +51,7 @@ struct SettingsView: View {
                     .padding(5)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.black)
-                    .padding(.horizontal, 10)
+                    .border(channel.isEmpty ? Color.red : Color.gray, width: 1)
                 NavigationLink(destination: ChannelsListView()) {
                     Image(systemName: "folder")
                         .resizable()
@@ -189,9 +193,6 @@ struct SettingsView: View {
             broadcaster = settings.first!.broadcaster
             highlighted = settings.first!.highlighted
             initLanguages()
-            if (settings.first!.version ?? "") != getAppVersion() {
-                showHelp = true
-            }
         }.onDisappear {
             save()
         }
@@ -207,8 +208,8 @@ struct SettingsView: View {
         }
     }
     
+    
     func save() {
-        settings.first!.channel = channel
         settings.first!.volume = volume
         settings.first!.muted = muted
         self.settings.first!.rate = rate.rawValue
@@ -219,9 +220,16 @@ struct SettingsView: View {
         self.settings.first!.subscribers = subscribers
         self.settings.first!.broadcaster = broadcaster
         self.settings.first!.highlighted = highlighted
-        let normalizedChannel = channel.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedChannel = normalizeChannelName(channel)
         if !normalizedChannel.isEmpty && !channels.contains(where: {$0.name == normalizedChannel}) {
             modelContext.insert(Channel(name: normalizedChannel))
+        }
+        channel = normalizedChannel
+        settings.first!.channel = channel
+        if channel.isEmpty {
+            forceShowSettings.toggle()
+        } else if forceShowSettings {
+            forceShowSettings.toggle()
         }
         try! modelContext.save()
         presentation.wrappedValue.dismiss()

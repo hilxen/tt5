@@ -52,7 +52,6 @@ final class AudioManager: NSObject, ObservableObject {
     @Published var speakerItem: Item?
     @Published var speakerActive: Bool = false
     @Published var speakerCountdown: Int = -1
-    var contentViewActive: Bool = false
     
     override init() {
         super.init()
@@ -260,9 +259,7 @@ extension AudioManager: AVSpeechSynthesizerDelegate {
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
         let item = utterances[utterance]!
         speakerItem = item
-        if contentViewActive {
-            speakerActive = true
-        }
+        speakerActive = true
         speakerCountdown = -1
         print("started speaking", item.nick.name, "queue size", utterances.count)
     }
