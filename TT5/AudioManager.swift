@@ -39,7 +39,13 @@ class SpeechTools {
 }
 
 
-final class AudioManager: NSObject, ObservableObject {
+protocol AudioManagerDelegate {
+    func speechStarted(item: Item)
+    func speechFinished(item: Item)
+}
+
+
+final class AudioManager: NSObject {
     static let shared = AudioManager()
     let speechTools = SpeechTools()
     private var player: AVQueuePlayer?
@@ -49,9 +55,7 @@ final class AudioManager: NSObject, ObservableObject {
     let ssmlVolumes: [String] = ["silent", "-36dB", "-27dB", "-18dB", "-9dB", "+0dB", "+9dB", "+18dB", "+27dB", "+36dB", "+45dB"]
 
     var utterances: [AVSpeechUtterance: Item] = [:]
-    @Published var speakerItem: Item?
-    @Published var speakerActive: Bool = false
-    @Published var speakerCountdown: Int = -1
+    var delegate: AudioManagerDelegate?
     
     override init() {
         super.init()
@@ -258,15 +262,13 @@ final class AudioManager: NSObject, ObservableObject {
 extension AudioManager: AVSpeechSynthesizerDelegate {
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
         let item = utterances[utterance]!
-        speakerItem = item
-        speakerActive = true
-        speakerCountdown = -1
         print("started speaking", item.nick.name, "queue size", utterances.count)
+        delegate?.speechStarted(item: item)
     }
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         let item = utterances.removeValue(forKey: utterance)!
-        speakerCountdown = 2
         print("stopped speaking", item.nick.name, "queue size", utterances.count)
+        delegate?.speechFinished(item: item)
     }
 }

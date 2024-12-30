@@ -14,13 +14,7 @@ protocol TwitchIRCDelegate {
 }
 
 
-class TwitchIRC: WebSocketConnectionDelegate, ObservableObject {
-//    @Published var items = [Item]()
-//    @Published var toasterText: String = ""
-//    @Published var showingToaster: Bool = false
-//    @Published var timeRemaining: Int = 5
-//    let audioManager: AudioManager = AudioManager.shared
-//    let maxMessages: Int = 100
+class TwitchIRC: WebSocketConnectionDelegate {
     var channel: String = ""
     var delegate: TwitchIRCDelegate?
     var connected: Bool = false
@@ -90,28 +84,6 @@ class TwitchIRC: WebSocketConnectionDelegate, ObservableObject {
         print("Outgoing message: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
         webSocketConnection.send(text: text)
     }
-    
-//    func addItem(nick: String, message: String, color: String = "#000000") {
-//        DispatchQueue.main.async {
-//            self.items.append(Item(nick: nick, message: message, color: color))
-//            let bots = ["", "nighbot", "moobot"]  // move to settings
-//            if !bots.contains(nick.lowercased()) {
-//                let messageEncoded = message.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
-//                let url = "https://ancq5cs6vo5xysowyp6qttq2he0aexqb.lambda-url.us-west-1.on.aws/"
-//                + "?language-code=ru-RU"
-//                + "&voice-id=Tatyana"
-//                + "&username=\(nick)"
-//                + "&text=\(messageEncoded)"
-//                self.audioManager.startAudio(url: url)
-//                self.toasterText = nick
-//                self.showingToaster = true
-//                self.timeRemaining = 5
-//            }
-//            if self.items.count > self.maxMessages {
-//                self.items.removeFirst()
-//            }
-//        }
-//    }
     
     func onMessage(connection: WebSocketConnection, text: String) {
         print("Incoming message: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")

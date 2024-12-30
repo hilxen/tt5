@@ -19,15 +19,17 @@ class Model: ObservableObject {
     @Published var list = [Item]()
     @Published var newNicks = [String: Nick]()
     @Published var shouldRefresh = CurrentValueSubject<Bool, Never>(false)
+    @Published var speakerItem: Item?
+    @Published var speakerActive: Bool = false
+    @Published var speakerCountdown: Int = -1
 }
 
-struct ContentView: View, TwitchIRCDelegate {
+struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     @Environment(\.modelContext) private var modelContext
     @Query private var settings: [Settings]
     @Query private var nicks: [Nick]
     @Query(filter: #Predicate<Language> { $0.enabled }) private var enabledLanguages: [Language]
 
-    @ObservedObject private var twitchIRC = TwitchIRC()
     @State private var showSettings = false
     @State private var showHelp = false
     @State private var firstLaunch = false
@@ -36,19 +38,20 @@ struct ContentView: View, TwitchIRCDelegate {
     @State private var vibrate: Bool = false
     @State private var previousChannel: String = ""
     @ObservedObject private var model = Model()
-    @ObservedObject private var audioManager: AudioManager = AudioManager.shared
+    let twitchIRC = TwitchIRC()
+    let audioManager: AudioManager = AudioManager.shared
     let maxMessages: Int = 20
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let itemHighlightColor = Color(red: 231/255, green: 211/255, blue: 253/255)
 
     init() {
         twitchIRC.delegate = self
+        audioManager.delegate = self
     }
     
     func initSettings() {
         if settings.isEmpty {
-            modelContext.insert(Settings(channel: "", volume: 1, muted: false, rate: .normal, pitch: .normal, voice: .female,
-                                         mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true))
+            modelContext.insert(Settings(channel: "", volume: 1, muted: false, rate: .normal, pitch: .normal, voice: .female, mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true))
             try! modelContext.save()
         }
     }
@@ -122,11 +125,18 @@ struct ContentView: View, TwitchIRCDelegate {
     }
     
     func onNotification(text: String) {
-//        DispatchQueue.main.async {
-//            addItem(nick: nil, text: text)
-//        }
     }
     
+    func speechStarted(item: Item) {
+        model.speakerItem = item
+        model.speakerActive = true
+        model.speakerCountdown = -1
+
+    }
+    
+    func speechFinished(item: Item) {
+        model.speakerCountdown = 2
+    }
     
     func getNick(name: String) -> Nick {
         print("get nick \(name)")
@@ -211,7 +221,7 @@ struct ContentView: View, TwitchIRCDelegate {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .font(.system(size: scale))
                                     .padding(.bottom, 2).padding(.top, 0)
-                                    .background(audioManager.speakerActive && item == audioManager.speakerItem ? itemHighlightColor: Color.clear)
+                                    .background(model.speakerActive && item == model.speakerItem ? itemHighlightColor: Color.clear)
                                 }.accentColor(Color.black)
                             }
                         }
@@ -236,9 +246,9 @@ struct ContentView: View, TwitchIRCDelegate {
                     { _ in didBecomeActiveNotification()}
                         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification))
                     { _ in didEnterBackgroundNotification()}
-                }.popup(isPresented: $audioManager.speakerActive) {
+                }.popup(isPresented: $model.speakerActive) {
                     ZStack {
-                        if let speakerItem = audioManager.speakerItem {
+                        if let speakerItem = model.speakerItem {
                             RoundedRectangle(cornerRadius: 20)
                                 .inset(by: 5) // inset value should be same as lineWidth in .stroke
                                 .stroke(.gray, lineWidth: 5)
@@ -301,11 +311,11 @@ struct ContentView: View, TwitchIRCDelegate {
                 }
             }.onReceive(timer) { _ in
                 if !showSettings && !showHelp {
-                    if audioManager.speakerCountdown > 0 {
-                        audioManager.speakerCountdown -= 1
+                    if model.speakerCountdown > 0 {
+                        model.speakerCountdown -= 1
                     }
-                    if audioManager.speakerCountdown == 0 {
-                        audioManager.speakerActive = false
+                    if model.speakerCountdown == 0 {
+                        model.speakerActive = false
                     }
                     saveNewNicks()
                 }
