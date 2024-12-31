@@ -226,11 +226,7 @@ struct SettingsView: View {
         }
         channel = normalizedChannel
         settings.first!.channel = channel
-        if channel.isEmpty {
-            forceShowSettings.toggle()
-        } else if forceShowSettings {
-            forceShowSettings.toggle()
-        }
+        forceShowSettings = channel.isEmpty
         try! modelContext.save()
         presentation.wrappedValue.dismiss()
     }

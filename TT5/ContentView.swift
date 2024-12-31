@@ -56,15 +56,12 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
         }
     }
     
+    
     func onAppear() {
         print("****** ContentView: onAppear ******")
         initSettings()
         
         let _settings = settings.first!
-        twitchIRC.connect()
-        if twitchIRC.channel != _settings.channel {
-            twitchIRC.join(channel: _settings.channel)
-        }
         if (_settings.version ?? "") != getAppVersion() {
             firstLaunch = true
         } else if _settings.channel.isEmpty {
@@ -79,6 +76,15 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
             ]
         }
         audioManager.speechTools.voices = enabledVoices
+        checkNeedRefresh()
+    }
+    
+    func checkNeedRefresh() {
+        let _settings = settings.first!
+        twitchIRC.connect()
+        if twitchIRC.channel != _settings.channel {
+            twitchIRC.join(channel: _settings.channel)
+        }
         if previousChannel != settings.first!.channel {
             model.shouldRefresh.send(true)
             previousChannel = settings.first!.channel
@@ -131,7 +137,6 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
         model.speakerItem = item
         model.speakerActive = true
         model.speakerCountdown = -1
-
     }
     
     func speechFinished(item: Item) {
@@ -174,14 +179,41 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
         model.newNicks.removeAll()
     }
     
+    func itemActive(_ item: Item) -> Bool {
+       return model.speakerActive && item == model.speakerItem
+    }
+
+    func getIcons(_ item: Item) -> [String] {
+        let mutedIcon = (item.nick.muted != settings.first!.muted) ? (item.nick.muted ? "speaker.slash": "speaker") : ""
+        let soundIcon = (mutedIcon == "speaker.slash") ? mutedIcon : item.skipped ? "play.slash": mutedIcon
+
+        var icons: [String] = []
+        if !soundIcon.isEmpty {
+            icons.append(soundIcon)
+        }
+        if item.nick.mod ?? false {
+            icons.append("mod")
+        }
+        if item.nick.subscriber ?? false {
+            icons.append("sub")
+        }
+        if item.nick.vip ?? false {
+            icons.append("vip")
+        }
+        if item.nick.broadcaster ?? false {
+            icons.append("own")
+        }
+        return icons
+    }
+    
         
     var body: some View {
-        if firstLaunch {
-            FirstLaunchHelpView(firstLaunch: $firstLaunch)
-        } else if forceShowSettings {
-            SettingsView(forceShowSettings: $forceShowSettings)
-        } else {
-            NavigationStack() {
+        NavigationStack() {
+            if firstLaunch {
+                FirstLaunchHelpView(firstLaunch: $firstLaunch)
+            } else if forceShowSettings {
+                SettingsView(forceShowSettings: $forceShowSettings)
+            } else {
                 if !settings.isEmpty && !settings.first!.channel.isEmpty {
                     TwitchPlayerWebView(shouldRefresh: model.shouldRefresh)
                         .frame(height: 200)
@@ -195,33 +227,23 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                                 NavigationLink(destination: NickView(nick: item.nick)) {
                                     VStack(alignment: .leading, spacing: 0) {
                                         HStack(spacing: 1) {
-                                            let mutedIcon = (item.nick.muted != settings.first!.muted)
-                                            ? (item.nick.muted ? "speaker.slash": "speaker") : ""
-                                            let icon = (mutedIcon == "speaker.slash")
-                                            ? mutedIcon : item.skipped ? "play.slash": mutedIcon
-                                            if icon != "" {
-                                                Image(systemName: icon)
+                                            ForEach(getIcons(item), id: \.self) { icon in
+                                                Image(icon)
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(height: scale * 0.8)
                                             }
-                                            if item.nick.mod ?? false {
-                                                Image("mod").resizable().scaledToFit().frame(height: scale * 0.8)
-                                            }
-                                            if item.nick.subscriber ?? false {
-                                                Image("sub").resizable().scaledToFit().frame(height: scale * 0.8)
-                                            }
-                                            if item.nick.vip ?? false {
-                                                Image("vip").resizable().scaledToFit().frame(height: scale * 0.8)
-                                            }
-                                            if item.nick.broadcaster ?? false {
-                                                Image("own").resizable().scaledToFit().frame(height: scale * 0.8)
-                                            }
-                                            Text(item.nick.name).foregroundStyle(item.nick.getColor()).bold().padding(.leading, 2)
+                                            Text(item.nick.name)
+                                                .foregroundStyle(item.nick.getColor())
+                                                .bold()
+                                                .padding(.leading, 2)
                                         }
                                         Text(item.message).multilineTextAlignment(.leading)
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .font(.system(size: scale))
                                     .padding(.bottom, 2).padding(.top, 0)
-                                    .background(model.speakerActive && item == model.speakerItem ? itemHighlightColor: Color.clear)
+                                    .background(itemActive(item) ? itemHighlightColor: Color.clear)
                                 }.accentColor(Color.black)
                             }
                         }
@@ -246,30 +268,8 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                     { _ in didBecomeActiveNotification()}
                         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification))
                     { _ in didEnterBackgroundNotification()}
-                }.popup(isPresented: $model.speakerActive) {
-                    ZStack {
-                        if let speakerItem = model.speakerItem {
-                            RoundedRectangle(cornerRadius: 20)
-                                .inset(by: 5) // inset value should be same as lineWidth in .stroke
-                                .stroke(.gray, lineWidth: 5)
-                                .frame(height: 100)
-                                .background(Color.white)
-                            Text(speakerItem.nick.name).font(.system(size: 50))
-                                .foregroundStyle(speakerItem.nick.getColor())
-                                .bold()
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.5)
-                                .padding(.horizontal, 20)
-                        }
-                    }
-                } customize: {
-                    $0
-                        .type(.floater())
-                        .appearFrom(.topSlide)
-                        .position(.top)
-                        .animation(.spring())
-                        .closeOnTapOutside(true)
-                }.toolbar {
+                }
+                .toolbar {
                     ToolbarItemGroup(placement: .bottomBar) {
                         Button {
                             if scale < 36 {
@@ -303,14 +303,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                         }
                     }
                 }
-                .navigationDestination(isPresented: $showSettings) {
-                    SettingsView(forceShowSettings: $forceShowSettings)
-                }
-                .navigationDestination(isPresented: $showHelp) {
-                    HelpView()
-                }
-            }.onReceive(timer) { _ in
-                if !showSettings && !showHelp {
+                .onReceive(timer) { _ in
                     if model.speakerCountdown > 0 {
                         model.speakerCountdown -= 1
                     }
@@ -318,6 +311,13 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                         model.speakerActive = false
                     }
                     saveNewNicks()
+                    checkNeedRefresh()
+                }
+                .navigationDestination(isPresented: $showSettings) {
+                    SettingsView(forceShowSettings: $forceShowSettings)
+                }
+                .navigationDestination(isPresented: $showHelp) {
+                    HelpView()
                 }
             }
         }
