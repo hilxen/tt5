@@ -13,6 +13,7 @@ import SwipeActions
 import Combine
 import NaturalLanguage
 import AVFoundation
+import CoreFoundation
 
 
 class Model: ObservableObject {
@@ -22,6 +23,7 @@ class Model: ObservableObject {
     @Published var speakerItem: Item?
     @Published var speakerActive: Bool = false
     @Published var speakerCountdown: Int = -1
+    @Published var lastHeartbeat: Int = Int(CFAbsoluteTimeGetCurrent())
 }
 
 struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
@@ -43,6 +45,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     let maxMessages: Int = 20
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let itemHighlightColor = Color(red: 231/255, green: 211/255, blue: 253/255)
+
 
     init() {
         twitchIRC.delegate = self
@@ -131,6 +134,23 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     }
     
     func onNotification(text: String) {
+    }
+    
+    func heartbeat() {
+        DispatchQueue.main.async {
+            let currentTime = Int(CFAbsoluteTimeGetCurrent())
+            model.lastHeartbeat = currentTime
+        }
+    }
+    
+    func checkHeartbeat() {
+        let currentTime = Int(CFAbsoluteTimeGetCurrent())
+        if currentTime - model.lastHeartbeat > 60 {
+            model.lastHeartbeat = currentTime
+            print("****** Reconnnecting...")
+            twitchIRC.disconnect()
+        }
+        checkNeedRefresh()
     }
     
     func speechStarted(item: Item) {
@@ -288,6 +308,8 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                         Spacer()
                         Button {
                             model.shouldRefresh.send(true)
+                            twitchIRC.disconnect()
+                            checkNeedRefresh()
                         } label: {
                             Image(systemName: "arrow.clockwise")
                         }
@@ -311,7 +333,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                         model.speakerActive = false
                     }
                     saveNewNicks()
-                    checkNeedRefresh()
+                    checkHeartbeat()
                 }
                 .navigationDestination(isPresented: $showSettings) {
                     SettingsView(forceShowSettings: $forceShowSettings)

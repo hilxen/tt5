@@ -11,6 +11,7 @@ import TwitchIRC
 protocol TwitchIRCDelegate {
     func onMessage(pm: PrivateMessage)
     func onNotification(text: String)
+    func heartbeat()
 }
 
 
@@ -88,6 +89,7 @@ class TwitchIRC: WebSocketConnectionDelegate {
     func onMessage(connection: WebSocketConnection, text: String) {
         print("Incoming message: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
         let twitchMessages: [(message: IncomingMessage?, text: String)] = IncomingMessage.parse(ircOutput: text)
+        delegate?.heartbeat()
         for (message, _) in twitchMessages {
             switch message {
             case .ping:
