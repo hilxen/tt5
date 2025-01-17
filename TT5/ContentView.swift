@@ -31,6 +31,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     @Query private var settings: [Settings]
     @Query private var nicks: [Nick]
     @Query(filter: #Predicate<Language> { $0.enabled }) private var enabledLanguages: [Language]
+    @Query private var bannedWords: [BannedWord]
 
     @State private var showSettings = false
     @State private var showHelp = false
@@ -39,13 +40,15 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     @State private var scale = 18.0
     @State private var vibrate: Bool = false
     @State private var previousChannel: String = ""
+    
     @ObservedObject private var model = Model()
     let twitchIRC = TwitchIRC()
     let audioManager: AudioManager = AudioManager.shared
     let maxMessages: Int = 20
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let itemHighlightColor = Color(red: 231/255, green: 211/255, blue: 253/255)
-
+    let itemAttentionColor = Color(red: 255/255, green: 200/255, blue: 200/255)
+    let itemSelectedColor = Color(red: 255/255, green: 255/255, blue: 117/255)
 
     init() {
         twitchIRC.delegate = self
@@ -54,7 +57,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     
     func initSettings() {
         if settings.isEmpty {
-            modelContext.insert(Settings(channel: "", volume: 1, muted: false, rate: .normal, pitch: .normal, voice: .female, mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true))
+            modelContext.insert(Settings(channel: "", volume: 1, muted: false, rate: .normal, pitch: .normal, voice: .female, mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true, bannedWordsEnabled: false))
             try! modelContext.save()
         }
     }
@@ -129,7 +132,10 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                 model.list.removeFirst()
             }
             let copyOfSettings = Settings(settings.first!)
-            audioManager.textToSpeech(settings: copyOfSettings, nicks: nicks, item: item)
+            audioManager.textToSpeech(
+                settings: copyOfSettings, nicks: nicks, item: item,
+                bannedWords: bannedWords,
+                enabledLanguages: enabledLanguages)
         }
     }
     
@@ -260,10 +266,19 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                                         }
                                         Text(item.message).multilineTextAlignment(.leading)
                                     }
+                                    .onLongPressGesture(minimumDuration: 0.2, pressing: { pressing in
+                                        item.highlighted = pressing
+                                    }) {
+                                            UIPasteboard.general.setValue(item.message, forPasteboardType: "public.plain-text")
+                                            print("onLongPressGesture - body")
+                                    }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .font(.system(size: scale))
                                     .padding(.bottom, 2).padding(.top, 0)
-                                    .background(itemActive(item) ? itemHighlightColor: Color.clear)
+                                    .background(itemActive(item)
+                                                ? itemHighlightColor: (item.containsBannedWords
+                                                                       ? itemAttentionColor : (item.highlighted
+                                                                                               ? itemSelectedColor: Color.clear)))
                                 }.accentColor(Color.black)
                             }
                         }

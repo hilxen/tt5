@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+		</dict>
+	</array>
 	<key>CFBundleGetInfoString</key>
 	<string></string>
 	<key>UIApplicationSceneManifest</key>
@@ -24,10 +31,16 @@
 		<string>fetch</string>
 		<string>audio</string>
 	</array>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UILaunchScreen</key>
 		<string></string>
 	</dict>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app uses reverse speech recognition to detect, and mute banned words even if that are misspelled</string>
 </dict>
 </plist>

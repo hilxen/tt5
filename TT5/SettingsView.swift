@@ -25,6 +25,7 @@ struct SettingsView: View {
     @State private var muted: Bool = false
     @State private var mods: Bool = true
     @State private var vips: Bool = true
+    @State private var bannedWordsEnabled: Bool = false
     @State private var subscribers: Bool = true
     @State private var broadcaster: Bool = true
     @State private var highlighted: Bool = true
@@ -86,6 +87,12 @@ struct SettingsView: View {
                         if volume < maxVolume {
                             volume += 1
                         }
+                    }
+                }.padding(.vertical, 5)
+                HStack {
+                    NavigationLink(destination: BannedWordsView()) {
+                        Image(systemName: "exclamationmark.bubble.fill").padding(.trailing, 8)
+                        Text("Banned Words")
                     }
                 }.padding(.vertical, 5)
                 HStack {
@@ -171,6 +178,12 @@ struct SettingsView: View {
                     NavigationLink(destination: NickListView()) {
                         Image(systemName: "person.3.sequence.fill")
                         Text("Customize Nicks")
+                    }
+                }.padding(.vertical, 5)
+                HStack {
+                    NavigationLink(destination: ProfilesView()) {
+                        Image(systemName: "folder.badge.gearshape")
+                        Text("Profiles").padding(.leading, 15)
                     }
                 }.padding(.vertical, 5)
             }.listStyle(PlainListStyle())

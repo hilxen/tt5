@@ -22,6 +22,11 @@ The app can be put into the background, so you can run other streaming apps like
 - Mute/unmute nicks by role or individually
 - Customize nick's pronunciation
 
+**New in version 1.1**
+
+- Detect and mute banned words even if they are misspelled
+- Profiles: save and load all settings to iOS Files
+
 **Contact me**
 
 The app is provided **FREE** of charge, but any help will be appreciated. Subscribe to my Twitch channel, Telegram or donate. Even $1 helps!

@@ -8,6 +8,7 @@
 import Foundation
 import AVFoundation
 import NaturalLanguage
+import Speech
 
 extension String {
     func escapedForXML() -> String {
@@ -51,6 +52,7 @@ final class AudioManager: NSObject {
     private var player: AVQueuePlayer?
     private var session = AVAudioSession.sharedInstance()
     private var volume: Int = 5
+    let bannedWordsManager = BannedWordsManager()
     let volumes: [Float] = [0.01, 0.0151, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32, 64]
     let ssmlVolumes: [String] = ["silent", "-36dB", "-27dB", "-18dB", "-9dB", "+0dB", "+9dB", "+18dB", "+27dB", "+36dB", "+45dB"]
 
@@ -62,7 +64,7 @@ final class AudioManager: NSObject {
         speechTools.synthesizer.delegate = self
     }
     
-    private func activateSession() {
+    func activateSession() {
         try? session.setCategory(
             .playback,
             mode: .default,
@@ -165,8 +167,19 @@ final class AudioManager: NSObject {
     func isWordCharacter(_ char: Character) -> Bool {
         return char.isLetter || char.isNumber || char == "_"
     }
+    
+    func cleanText(nicks: [Nick], item: Item) -> String {
+        let mappedText1 = removeExcessiveEmotes(item: item)
+        let mappedText2 = replaceAtWords(text: mappedText1, nicks: nicks)
+        let charactersToReplace = CharacterSet(charactersIn: "[]{}/|\\~^&;")
+        let cleanedText = removeExtraRepetitions(
+            replaceListedCharactersWithSpaces(mappedText2, charactersToReplace: charactersToReplace))
+        return cleanedText
+    }
 
-    func textToSpeech(settings: Settings, nicks: [Nick], item: Item) {
+    func textToSpeech(settings: Settings, nicks: [Nick], item: Item,
+                      bannedWords: [BannedWord],
+                      enabledLanguages: [Language]) {
         let nick = item.nick
         if utterances.count > 5 {
             print("speech skipped", nick.name, "queue", utterances.count, "> 5")
@@ -192,12 +205,28 @@ final class AudioManager: NSObject {
                 return
             }
         }
-        let mappedText1 = removeExcessiveEmotes(item: item)
-        let mappedText2 = replaceAtWords(text: mappedText1, nicks: nicks)
-        let charactersToReplace = CharacterSet(charactersIn: "[]{}/|\\~^&;")
-        let cleanedText = removeExtraRepetitions(
-            replaceListedCharactersWithSpaces(mappedText2, charactersToReplace: charactersToReplace))
-        
+        let cleanedText = cleanText(nicks: nicks, item: item)
+        if (settings.bannedWordsEnabled ?? false) && SFSpeechRecognizer.authorizationStatus() == .authorized && !bannedWords.isEmpty {
+            bannedWordsManager.check(
+                text: "\(nick.pronunciationOfName()) \(cleanedText)",
+                settings: settings,
+                enabledLanguages: enabledLanguages,
+                bannedWords: bannedWords,
+                complete: ({ transcription, matches, notMatches, voiceId in
+                if matches.isEmpty {
+                    self.speak(settings: settings, nick: nick, item: item, cleanedText: cleanedText)
+                } else {
+                    item.containsBannedWords = true
+                    item.skipped = true
+                    item.message.append("⛔️\(matches.joined(separator: " ⛔️"))")
+                }
+            }))
+        } else {
+            speak(settings: settings, nick: nick, item: item, cleanedText: cleanedText)
+        }
+    }
+    
+    func speak(settings: Settings, nick: Nick, item: Item, cleanedText: String) {
         var volumeIndex = settings.volume + nick.volume!
         if volumeIndex < 0 { volumeIndex = 0 }
         else if volumeIndex > volumes.endIndex { volumeIndex = volumes.endIndex }
@@ -261,14 +290,16 @@ final class AudioManager: NSObject {
 
 extension AudioManager: AVSpeechSynthesizerDelegate {
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
-        let item = utterances[utterance]!
-        print("started speaking", item.nick.name, "queue size", utterances.count)
-        delegate?.speechStarted(item: item)
+        if let item = utterances[utterance] {
+            print("started speaking", item.nick.name, "queue size", utterances.count)
+            delegate?.speechStarted(item: item)
+        }
     }
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-        let item = utterances.removeValue(forKey: utterance)!
-        print("stopped speaking", item.nick.name, "queue size", utterances.count)
-        delegate?.speechFinished(item: item)
+        if let item = utterances.removeValue(forKey: utterance) {
+            print("stopped speaking", item.nick.name, "queue size", utterances.count)
+            delegate?.speechFinished(item: item)
+        }
     }
 }

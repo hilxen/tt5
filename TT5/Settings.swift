@@ -97,7 +97,57 @@ enum Voice: String, CaseIterable {
 
 
 @Model
-final class Settings {
+final class Settings: Codable {
+    enum CodingKeys: CodingKey {
+        case channel
+        case volume
+        case muted
+        case rate
+        case pitch
+        case voice
+        case mods
+        case vips
+        case subscribers
+        case broadcaster
+        case highlighted
+        case version
+        case bannedWordsEnabled
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        channel = try container.decode(String.self, forKey: .channel)
+        volume = try container.decode(Int.self, forKey: .volume)
+        muted = try container.decode(Bool.self, forKey: .muted)
+        rate = try container.decode(Float.self, forKey: .rate)
+        pitch = try container.decode(Float.self, forKey: .pitch)
+        voice = try container.decode(String.self, forKey: .voice)
+        mods = try container.decode(Bool.self, forKey: .mods)
+        vips = try container.decode(Bool.self, forKey: .vips)
+        subscribers = try container.decode(Bool.self, forKey: .subscribers)
+        broadcaster = try container.decode(Bool.self, forKey: .broadcaster)
+        highlighted = try container.decode(Bool.self, forKey: .highlighted)
+        version = try container.decodeIfPresent(String.self, forKey: .version)
+        bannedWordsEnabled = try container.decodeIfPresent(Bool.self, forKey: .bannedWordsEnabled)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(channel, forKey: .channel)
+        try container.encode(volume, forKey: .volume)
+        try container.encode(muted, forKey: .muted)
+        try container.encode(rate, forKey: .rate)
+        try container.encode(pitch, forKey: .pitch)
+        try container.encode(voice, forKey: .voice)
+        try container.encode(mods, forKey: .mods)
+        try container.encode(vips, forKey: .vips)
+        try container.encode(subscribers, forKey: .subscribers)
+        try container.encode(broadcaster, forKey: .broadcaster)
+        try container.encode(highlighted, forKey: .highlighted)
+        try container.encodeIfPresent(version, forKey: .version)
+        try container.encodeIfPresent(bannedWordsEnabled, forKey: .bannedWordsEnabled)
+    }
+    
     var channel: String
     var volume: Int
     var muted: Bool
@@ -110,9 +160,10 @@ final class Settings {
     var broadcaster: Bool
     var highlighted: Bool
     var version: String?
+    var bannedWordsEnabled: Bool?
     
     init(channel: String, volume: Int, muted: Bool, rate: Rate, pitch: Pitch, voice: Voice,
-         mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool) {
+         mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool, bannedWordsEnabled: Bool) {
         self.channel = channel
         self.volume = volume
         self.muted = muted
@@ -124,6 +175,7 @@ final class Settings {
         self.subscribers = subscribers
         self.broadcaster = broadcaster
         self.highlighted = highlighted
+        self.bannedWordsEnabled = bannedWordsEnabled
     }
     
     init(_ copy: Settings) {
@@ -138,6 +190,7 @@ final class Settings {
         self.subscribers = copy.subscribers
         self.broadcaster = copy.broadcaster
         self.highlighted = copy.highlighted
+        self.bannedWordsEnabled = copy.bannedWordsEnabled
     }
     
     func set(_ copy: Settings) {
@@ -152,12 +205,48 @@ final class Settings {
         self.subscribers = copy.subscribers
         self.broadcaster = copy.broadcaster
         self.highlighted = copy.highlighted
+        self.bannedWordsEnabled = copy.bannedWordsEnabled
     }
 }
 
 
 @Model
-final class Nick: Identifiable {
+final class Nick: Identifiable, Codable {
+    enum CodingKeys: CodingKey {
+        case name
+        case defaults
+        case muted
+        case pronunciation
+        case volume
+        case rate
+        case pitch
+        case voice
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        defaults = try container.decode(Bool.self, forKey: .defaults)
+        muted = try container.decode(Bool.self, forKey: .muted)
+        pronunciation = try container.decodeIfPresent(String.self, forKey: .pronunciation)
+        volume = try container.decodeIfPresent(Int.self, forKey: .volume)
+        rate = try container.decodeIfPresent(Float.self, forKey: .rate)
+        pitch = try container.decodeIfPresent(Float.self, forKey: .pitch)
+        voice = try container.decodeIfPresent(String.self, forKey: .voice)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(defaults, forKey: .defaults)
+        try container.encode(muted, forKey: .muted)
+        try container.encodeIfPresent(volume, forKey: .volume)
+        try container.encodeIfPresent(pronunciation, forKey: .pronunciation)
+        try container.encodeIfPresent(rate, forKey: .rate)
+        try container.encodeIfPresent(pitch, forKey: .pitch)
+        try container.encodeIfPresent(voice, forKey: .voice)
+    }
+    
     @Attribute(.unique)
     var name: String
     var defaults: Bool
@@ -242,7 +331,33 @@ final class Nick: Identifiable {
 
 
 @Model
-final class Language: Identifiable {
+final class Language: Identifiable, Codable {
+    enum CodingKeys: CodingKey {
+        case name
+        case enabled
+        case femaleVoiceId
+        case maleVoiceId
+        case voiceIds
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        enabled = try container.decode(Bool.self, forKey: .enabled)
+        femaleVoiceId = try container.decodeIfPresent(String.self, forKey: .femaleVoiceId)
+        maleVoiceId = try container.decodeIfPresent(String.self, forKey: .maleVoiceId)
+        voiceIds = try container.decode([VoiceId].self, forKey: .voiceIds)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(enabled, forKey: .enabled)
+        try container.encodeIfPresent(femaleVoiceId, forKey: .femaleVoiceId)
+        try container.encodeIfPresent(maleVoiceId, forKey: .maleVoiceId)
+        try container.encode(voiceIds, forKey: .voiceIds)
+    }
+
     var name: String
     var enabled: Bool
     var femaleVoiceId: String?
@@ -279,7 +394,21 @@ struct VoiceId: Codable, Hashable, Identifiable {
 
 
 @Model
-final class Channel: Identifiable {
+final class Channel: Identifiable, Codable {
+    enum CodingKeys: CodingKey {
+        case name
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+    }
+    
     var name: String
     
     init(name: String) {
@@ -288,5 +417,42 @@ final class Channel: Identifiable {
     
     var id: String {
         return name
+    }
+}
+
+
+@Model
+final class BannedWord: Identifiable, Codable {
+    enum CodingKeys: CodingKey {
+        case pattern
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        pattern = try container.decode(String.self, forKey: .pattern)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(pattern, forKey: .pattern)
+    }
+    
+    var pattern: String
+    
+    init(_ pattern: String) {
+        self.pattern = pattern
+    }
+    
+    var id: String {
+        return pattern
+    }
+    
+    func match(_ string: String) -> Bool {
+        if pattern.contains("*") || pattern.contains("?") {
+            let pred = NSPredicate(format: "self LIKE %@", pattern)
+            return !NSArray(object: string).filtered(using: pred).isEmpty
+        } else {
+            return string.range(of: pattern, options: .caseInsensitive) != nil
+        }
     }
 }

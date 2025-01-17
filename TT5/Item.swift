@@ -28,6 +28,8 @@ final class Item : Equatable {
     var emotesStr: String
     var emotes: [Emote]
     var skipped: Bool = false
+    var containsBannedWords: Bool = false
+    var highlighted: Bool = false
     
     static func ==(lhs: Item, rhs: Item) -> Bool {
         return lhs.id == rhs.id

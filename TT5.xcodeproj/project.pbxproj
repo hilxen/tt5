@@ -27,6 +27,9 @@
 		E5B995232D0579CD00BE7865 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B995222D0579CD00BE7865 /* AudioManager.swift */; };
 		E5B995412D06730700BE7865 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B995402D06730700BE7865 /* Settings.swift */; };
 		E5D977872D081472002A8DE1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5D977862D081467002A8DE1 /* SettingsView.swift */; };
+		E5EEC7FA2D2AF4C700CBFE60 /* ProfilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EEC7F92D2AF4BB00CBFE60 /* ProfilesView.swift */; };
+		E5EEC7FE2D2E252600CBFE60 /* BannedWordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EEC7FD2D2E251800CBFE60 /* BannedWordsView.swift */; };
+		E5EEC8002D3376EF00CBFE60 /* BannedWordsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EEC7FF2D3376E900CBFE60 /* BannedWordsManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +53,9 @@
 		E5B995222D0579CD00BE7865 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		E5B995402D06730700BE7865 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		E5D977862D081467002A8DE1 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		E5EEC7F92D2AF4BB00CBFE60 /* ProfilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilesView.swift; sourceTree = "<group>"; };
+		E5EEC7FD2D2E251800CBFE60 /* BannedWordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannedWordsView.swift; sourceTree = "<group>"; };
+		E5EEC7FF2D3376E900CBFE60 /* BannedWordsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannedWordsManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -91,6 +97,9 @@
 		E50E67AF2CFCBBE300654252 /* TT5 */ = {
 			isa = PBXGroup;
 			children = (
+				E5EEC7FF2D3376E900CBFE60 /* BannedWordsManager.swift */,
+				E5EEC7FD2D2E251800CBFE60 /* BannedWordsView.swift */,
+				E5EEC7F92D2AF4BB00CBFE60 /* ProfilesView.swift */,
 				E57A7AA02D1C735A00F326F0 /* Resources */,
 				E50996FB2D19F30D008ED3F5 /* ChannelsView.swift */,
 				E50996F92D17D994008ED3F5 /* LanguagesView.swift */,
@@ -214,12 +223,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				E5D977872D081472002A8DE1 /* SettingsView.swift in Sources */,
+				E5EEC8002D3376EF00CBFE60 /* BannedWordsManager.swift in Sources */,
 				E57D6DF22D1513D90030CBE6 /* HelpView.swift in Sources */,
+				E5EEC7FA2D2AF4C700CBFE60 /* ProfilesView.swift in Sources */,
 				E5B995412D06730700BE7865 /* Settings.swift in Sources */,
 				E50E67B32CFCBBE400654252 /* ContentView.swift in Sources */,
 				E57D6DE52D0E77FB0030CBE6 /* TwitchIRC.swift in Sources */,
 				E50E67B52CFCBBE400654252 /* Item.swift in Sources */,
 				E57D6DF02D14EDC10030CBE6 /* NickListView.swift in Sources */,
+				E5EEC7FE2D2E252600CBFE60 /* BannedWordsView.swift in Sources */,
 				E57D6DE92D124A200030CBE6 /* NickView.swift in Sources */,
 				E50996FC2D19F312008ED3F5 /* ChannelsView.swift in Sources */,
 				E50E67B12CFCBBE400654252 /* TT5App.swift in Sources */,
@@ -374,7 +386,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Hilxen.TT5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -409,7 +421,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Hilxen.TT5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
