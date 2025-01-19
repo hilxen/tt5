@@ -266,20 +266,20 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                                         }
                                         Text(item.message).multilineTextAlignment(.leading)
                                     }
-                                    .onLongPressGesture(minimumDuration: 0.2, pressing: { pressing in
-                                        item.highlighted = pressing
-                                    }) {
-                                            UIPasteboard.general.setValue(item.message, forPasteboardType: "public.plain-text")
-                                            print("onLongPressGesture - body")
-                                    }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .font(.system(size: scale))
                                     .padding(.bottom, 2).padding(.top, 0)
+                                    .onLongPressGesture(minimumDuration: 0.2, pressing: { pressing in
+                                        item.highlighted = pressing
+                                    }) {
+                                        UIPasteboard.general.setValue(item.message, forPasteboardType: "public.plain-text")
+                                    }
                                     .background(itemActive(item)
                                                 ? itemHighlightColor: (item.containsBannedWords
                                                                        ? itemAttentionColor : (item.highlighted
                                                                                                ? itemSelectedColor: Color.clear)))
-                                }.accentColor(Color.black)
+                                }
+                                .accentColor(Color.black)
                             }
                         }
                     }

@@ -212,13 +212,13 @@ final class AudioManager: NSObject {
                 settings: settings,
                 enabledLanguages: enabledLanguages,
                 bannedWords: bannedWords,
-                complete: ({ transcription, matches, notMatches, voiceId in
-                if matches.isEmpty {
+                complete: ({ transcription, matchedBannedWords, notMatchedWords, voiceId in
+                if matchedBannedWords.isEmpty {
                     self.speak(settings: settings, nick: nick, item: item, cleanedText: cleanedText)
                 } else {
                     item.containsBannedWords = true
                     item.skipped = true
-                    item.message.append("⛔️\(matches.joined(separator: " ⛔️"))")
+                    item.message.append("⛔️\(matchedBannedWords.joined(separator: " ⛔️"))")
                 }
             }))
         } else {

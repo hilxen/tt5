@@ -23,6 +23,7 @@ class SpeechDelegate: NSObject, AVSpeechSynthesizerDelegate {
 }
 
 final class BannedWordsManager: NSObject {
+    let recognizer = NLLanguageRecognizer()
     let synthesizer = AVSpeechSynthesizer()
     let speechDelegate = SpeechDelegate()
     
@@ -38,18 +39,25 @@ final class BannedWordsManager: NSObject {
                settings: Settings,
                enabledLanguages: [Language],
                bannedWords: [BannedWord],
-               complete: @escaping (_ transcription: String, _ matches: [String], _ notMatches: [String], _ voiceId: String) -> Void) {
-        let speechTools = AudioManager.shared.speechTools
+               complete: @escaping (_ transcription: String, _ matchedBannedWords: [String], _ notMatchedWords: [String], _ voiceId: String) -> Void) {
         var voiceId: String
         let voice = settings.voice
         var language = "en"
-        if speechTools.recognizer.languageConstraints.count > 1 {
-            speechTools.recognizer.processString(text)
-            language = speechTools.recognizer.dominantLanguage?.rawValue ?? speechTools.recognizer.languageConstraints.first!.rawValue
-            voiceId = speechTools.voices[language]?[voice] ?? speechTools.voices.values.first?[voice] ?? "com.apple.voice.compact.en-US.Samantha"
+        recognizer.languageConstraints = enabledLanguages.map({NLLanguage($0.languageCode())})
+        var enabledVoices = [String: [String: String]]()
+        for language in enabledLanguages {
+            enabledVoices[language.languageCode()] = [
+                "female": language.femaleVoiceId ?? language.maleVoiceId!,
+                "male": language.maleVoiceId ?? language.femaleVoiceId!
+            ]
+        }
+        if recognizer.languageConstraints.count > 1 {
+            recognizer.processString(text)
+            language = recognizer.dominantLanguage?.rawValue ?? recognizer.languageConstraints.first!.rawValue
+            voiceId = enabledVoices[language]?[voice] ?? enabledVoices.values.first?[voice] ?? "com.apple.voice.compact.en-US.Samantha"
         } else {
-            language = speechTools.voices.keys.first ?? "en"
-            voiceId = speechTools.voices.values.first?[voice] ?? "com.apple.voice.compact.en-US.Samantha"
+            language = enabledVoices.keys.first ?? "en"
+            voiceId = enabledVoices.values.first?[voice] ?? "com.apple.voice.compact.en-US.Samantha"
         }
         var localeId = "en-US"
         for enabledLanguage in enabledLanguages {
@@ -81,19 +89,37 @@ final class BannedWordsManager: NSObject {
                     let isFinal = result.isFinal
                     print("isFinal = \(isFinal) Text \(result.bestTranscription.formattedString)")
                     result.transcriptions.forEach { print($0.formattedString) }
-                    var matches: [String] = []
-                    var notMatches: [String] = []
+                    var matchedBannedWords: [String] = []
+                    var notMatchedWords: [String] = []
+                    var matchedWords: [String] = []
                     let words: [String] = result.bestTranscription.formattedString.components(separatedBy: " ")
-                    for bannedWord in bannedWords {
+                    if bannedWords.isEmpty {
                         for word in words {
-                            if bannedWord.match(word) {
-                                matches.append(bannedWord.pattern)
-                            } else if !notMatches.contains(word){
-                                notMatches.append(word)
+                            notMatchedWords.append(word)
+                        }
+                    }
+                    else {
+                        for bannedWord in bannedWords {
+                            for word in words {
+                                if bannedWord.match(word) {
+                                    if !matchedWords.contains(word) {
+                                        matchedWords.append(word)
+                                    }
+                                    if !matchedBannedWords.contains(bannedWord.pattern) {
+                                        matchedBannedWords.append(bannedWord.pattern)
+                                    }
+                                }
+                            }
+                        }
+                        for bannedWord in bannedWords {
+                            for word in words {
+                                if !matchedWords.contains(word) && !notMatchedWords.contains(word){
+                                    notMatchedWords.append(word)
+                                }
                             }
                         }
                     }
-                    complete(result.bestTranscription.formattedString, matches, notMatches, voiceId)
+                    complete(result.bestTranscription.formattedString, matchedBannedWords, notMatchedWords, voiceId)
                 }
             }
         }

@@ -68,17 +68,17 @@ struct TestBannedWordsView: View {
     @Query(filter: #Predicate<Language> { $0.enabled }) private var enabledLanguages: [Language]
     @Query private var bannedWords: [BannedWord]
     @State private var textForTesting: String = ""
-    @State private var matches: [String] = []
-    @State private var notMatches: [String] = []
+    @State private var matchedBannedWords: [String] = []
+    @State private var notMatchedWords: [String] = []
     @State private var transcription: String = ""
     let bannedWordsManager = BannedWordsManager()
     
     func speak(_ text: String) {
         let speechTools = AudioManager.shared.speechTools
-        bannedWordsManager.check(text: text, settings: settings.first!, enabledLanguages: enabledLanguages, bannedWords: bannedWords, complete: ({ transcription, matches, notMatches, voiceId in
-            self.matches = matches
+        bannedWordsManager.check(text: text, settings: settings.first!, enabledLanguages: enabledLanguages, bannedWords: bannedWords, complete: ({ transcription, matchedBannedWords, notMatchedWords, voiceId in
+            self.matchedBannedWords = matchedBannedWords
             self.transcription = transcription
-            self.notMatches = notMatches
+            self.notMatchedWords = notMatchedWords
             
             DispatchQueue.main.async {
                 let utterance = AVSpeechUtterance(string: text)
@@ -114,11 +114,11 @@ struct TestBannedWordsView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
-                if !matches.isEmpty {
+                if !matchedBannedWords.isEmpty {
                     HStack{
                         Image(systemName: "speaker.slash.fill").resizable()
                             .frame(width: 32, height: 25)
-                        Text("Will be muted, matches found\n⛔️\(matches.joined(separator: " ⛔️"))")
+                        Text("Will be muted, matches found\n⛔️\(matchedBannedWords.joined(separator: " ⛔️"))")
                     }.padding(.horizontal, 20).padding(.vertical, 10)
                 } else {
                     HStack{
@@ -128,15 +128,15 @@ struct TestBannedWordsView: View {
                     }.padding(.horizontal, 20).padding(.vertical, 10)
                 }
             }
-            List(Array(notMatches.enumerated()), id: \.offset) { index, word in
+            List(Array(notMatchedWords.enumerated()), id: \.offset) { index, word in
                 HStack {
-                    TextField("", text: $notMatches[index])
+                    TextField("", text: $notMatchedWords[index])
                         .disableAutocorrection(true)
                         .padding(5)
                         .background(Color.gray.opacity(0.1))
                         .foregroundColor(.black)
                     Button("Add") {
-                        modelContext.insert(BannedWord(notMatches[index]))
+                        modelContext.insert(BannedWord(notMatchedWords[index]))
                         try! modelContext.save()
                         speak(textForTesting)
                     }.buttonStyle(.bordered)
@@ -179,8 +179,8 @@ struct BannedWordsView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
                 HStack{
-                    HStack{
-                            Text("This app uses reverse speech recognition to detect misspelled words.")
+                    VStack{
+                            Text("This app uses reverse speech recognition to detect and mute banned words, even if they are misspelled")
                             Button("Enable Speech recognition") {
                                 SFSpeechRecognizer.requestAuthorization { authStatus in
                                     speechRecognitionEnabled = authStatus == .authorized

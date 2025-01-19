@@ -51,6 +51,11 @@ final class Profile: Codable {
 }
 
 
+extension URL: Identifiable {
+    public var id: String { self.absoluteString }
+}
+
+
 struct ProfilesView: View {
     @Environment(\.presentationMode) var presentation
     @Environment(\.modelContext) private var modelContext
@@ -61,10 +66,11 @@ struct ProfilesView: View {
     @Query private var bannedWords: [BannedWord]
     
     @State private var name: String = "default"
-    @State private var multiSelection = Set<URL>()
+    @State private var multiSelection = Set<String>()
     @State private var profiles: [URL] = []
     @State private var actionFeedback = false
     let itemHighlightColor = Color(red: 231/255, green: 211/255, blue: 253/255)
+    let itemSelectColor = Color(red: 210/255, green: 208/255, blue: 214/255)
     
     func reloadProfiles() {
         profiles.removeAll()
@@ -175,12 +181,12 @@ struct ProfilesView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
             HStack {
-                List(profiles, id: \.self, selection: $multiSelection) { url in
+                List(profiles, selection: $multiSelection) { url in
                     let itemName = url.deletingPathExtension().lastPathComponent
                     HStack {
                         Text(itemName).background(name == itemName && actionFeedback ? itemHighlightColor: Color.clear)
                     }
-                    .listRowBackground(name == itemName && actionFeedback ? itemHighlightColor: Color.white)
+                    .listRowBackground(name == itemName && actionFeedback ? itemHighlightColor: (multiSelection.contains(url.id) ? itemSelectColor: Color.white))
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) {
                             delete(url)
@@ -202,14 +208,11 @@ struct ProfilesView: View {
             reloadProfiles()
         }
         .navigationTitle("Profiles")
-        .toolbar {
-            EditButton()
-        }
         if !multiSelection.isEmpty {
             HStack {
                 if multiSelection.count == 1 {
                     Button() {
-                        load(url: multiSelection.first!)
+                        load(url: URL(string: multiSelection.first!)!)
                         presentation.wrappedValue.dismiss()
                     } label: {
                         Label("Load", systemImage: "checkmark.circle.fill")
@@ -219,7 +222,7 @@ struct ProfilesView: View {
                 Spacer()
                 Button(role: .destructive) {
                     for url in multiSelection {
-                        delete(url)
+                        delete(URL(string: url)!)
                     }
                     multiSelection.removeAll()
                 } label: {
