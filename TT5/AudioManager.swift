@@ -54,7 +54,7 @@ final class AudioManager: NSObject {
     private var volume: Int = 5
     let bannedWordsManager = BannedWordsManager()
     let volumes: [Float] = [0.01, 0.0151, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32, 64]
-    let ssmlVolumes: [String] = ["silent", "-36dB", "-27dB", "-18dB", "-9dB", "+0dB", "+9dB", "+18dB", "+27dB", "+36dB", "+45dB"]
+    let ssmlVolumes: [String] = ["silent", "-36dB", "-27dB", "-18dB", "-9dB", "+0dB", "+9dB", "+18dB", "+27dB", "+36dB", "+44dB"]
 
     var utterances: [AVSpeechUtterance: Item] = [:]
     var delegate: AudioManagerDelegate?
@@ -123,7 +123,7 @@ final class AudioManager: NSObject {
     }
     
     func findPronunciation(name: String, nicks:[Nick]) -> String? {
-        let pronunciation = nicks.first(where: { $0.name == name.dropFirst() })?.pronunciation ?? ""
+        let pronunciation = nicks.first(where: { $0.name.localizedLowercase == name.dropFirst().localizedLowercase })?.pronunciation ?? ""
         return !pronunciation.isEmpty ? "@\(pronunciation)": nil
     }
     
