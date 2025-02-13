@@ -20,6 +20,8 @@ class Model: ObservableObject {
     @Published var list = [Item]()
     @Published var newNicks = [String: Nick]()
     @Published var shouldRefresh = CurrentValueSubject<Bool, Never>(false)
+    @Published var shouldMute = CurrentValueSubject<Bool, Never>(false)
+    @Published var shouldPlay = CurrentValueSubject<Bool, Never>(false)
     @Published var speakerItem: Item?
     @Published var speakerActive: Bool = false
     @Published var speakerCountdown: Int = -1
@@ -61,7 +63,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
             try! modelContext.save()
         }
     }
-    
+
     
     func onAppear() {
         print("****** ContentView: onAppear ******")
@@ -241,7 +243,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                 SettingsView(forceShowSettings: $forceShowSettings)
             } else {
                 if !settings.isEmpty && !settings.first!.channel.isEmpty {
-                    TwitchPlayerWebView(shouldRefresh: model.shouldRefresh)
+                    TwitchPlayerWebView(shouldRefresh: model.shouldRefresh, shouldPlay: model.shouldPlay, shouldMute: model.shouldMute)
                         .frame(height: 200)
                         .padding([.all], 5)
                 }
@@ -321,6 +323,16 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                             Image(systemName: "textformat.size.smaller")
                         }
                         Spacer()
+                        Button {
+                            model.shouldMute.send(true)
+                        } label: {
+                            Image(systemName: "speaker").resizable().scaledToFit().frame(height: 25).padding(.trailing, 8)
+                        }
+                        Button {
+                            model.shouldPlay.send(true)
+                        } label: {
+                            Image(systemName: "play").resizable().scaledToFit().frame(height: 25)
+                        }
                         Button {
                             model.shouldRefresh.send(true)
                             twitchIRC.disconnect()

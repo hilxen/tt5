@@ -14,6 +14,8 @@ struct TwitchPlayerWebView: UIViewRepresentable {
     @Environment(\.modelContext) private var modelContext
     @Query private var settings: [Settings]
     let shouldRefresh: CurrentValueSubject<Bool, Never>
+    let shouldPlay: CurrentValueSubject<Bool, Never>
+    let shouldMute: CurrentValueSubject<Bool, Never>
     private let webView: WKWebView = WKWebView()
     
     func makeUIView(context: Context) -> WKWebView {
@@ -21,7 +23,9 @@ struct TwitchPlayerWebView: UIViewRepresentable {
         webView.configuration.allowsPictureInPictureMediaPlayback = true
         context.coordinator.navigation = reload()
         context.coordinator.webView = self
-        context.coordinator.observeChanges(for: shouldRefresh)
+        context.coordinator.observeChangesRefresh(for: shouldRefresh)
+        context.coordinator.observeChangesPlay(for: shouldPlay)
+        context.coordinator.observeChangesMute(for: shouldMute)
         return webView
     }
     
@@ -43,14 +47,33 @@ extension TwitchPlayerWebView {
     class Coordinator {
         var navigation: WKNavigation?
         var webView: TwitchPlayerWebView?
-        private var cancellable: AnyCancellable?
+        private var cancellableRefresh: AnyCancellable?
+        private var cancellablePlay: AnyCancellable?
+        private var cancellableMute: AnyCancellable?
         
-        @MainActor
-        func observeChanges(for shouldRefresh: CurrentValueSubject<Bool, Never>) {
-            cancellable = shouldRefresh
+        func observeChangesRefresh(for shouldRefresh: CurrentValueSubject<Bool, Never>) {
+            cancellableRefresh = shouldRefresh
                 .filter { $0 == true }
                 .sink { [weak self] newValue in
                     self?.navigation = self?.webView?.reload()
+                }
+        }
+        
+        func observeChangesPlay(for shouldPlay: CurrentValueSubject<Bool, Never>) {
+            cancellablePlay = shouldPlay
+                .filter { $0 == true }
+                .sink { [weak self] newValue in
+                    self?.webView?.webView.evaluateJavaScript("document.querySelector(\"#channel-player > div > div.Layout-sc-1xcs6mc-0.cFsYRp.player-controls__left-control-group > div.InjectLayout-sc-1i43xsx-0.kBtJDm > button\").click()") { (result, error) in
+                    }
+                }
+        }
+
+        func observeChangesMute(for shouldMute: CurrentValueSubject<Bool, Never>) {
+            cancellableMute = shouldMute
+                .filter { $0 == true }
+                .sink { [weak self] newValue in
+                    self?.webView?.webView.evaluateJavaScript("document.querySelector(\"#channel-player > div > div.Layout-sc-1xcs6mc-0.cFsYRp.player-controls__left-control-group > div:nth-child(2) > div > div.Layout-sc-1xcs6mc-0.hdWbbR > div > button\").click()") { (result, error) in
+                    }
                 }
         }
     }
