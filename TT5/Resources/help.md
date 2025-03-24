@@ -6,7 +6,7 @@ The app is useful for both channel owners and viewers, so they do not need to re
 
 The app can be put into the background, so you can run other streaming apps like PRISM Live at the same time, or simply put your phone in a pocket.
 
-**How to put the app into background:** [watch this short demo](https://youtu.be/NGAhAvaZAsQ). Tap the "play" button on stream preview, and then to view it in a popup. This puts the app into the background! Now you can open other apps or lock your phone.
+**How to put the app into background:** The app automatically starts live Twitch channel in picture-in-picture mode. This puts the app into the background! Now you can open other apps or lock your phone. Tap or refresh button if needed to restart video
 
 **Tip:** If you are a streamer, you can prevent hearing yourself by increasing speech volume in settings or keeping the stream preview on mute.
 
@@ -21,6 +21,10 @@ The app can be put into the background, so you can run other streaming apps like
 - Customize speech at app level or for individual nicks - Voice, Volume, Rate, Pitch
 - Mute/unmute nicks by role or individually
 - Customize nick's pronunciation
+
+**New in version 1.2**
+- automatically start live Twitch channel in picture-in-picture mode, this puts the app into the background
+- adjust speech rate with a slider
 
 **New in version 1.1**
 

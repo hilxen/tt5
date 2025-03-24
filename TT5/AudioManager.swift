@@ -231,7 +231,7 @@ final class AudioManager: NSObject {
         if volumeIndex < 0 { volumeIndex = 0 }
         else if volumeIndex > volumes.endIndex { volumeIndex = volumes.endIndex }
 
-        let ssmlRate = Rate.fromRawValue(rawValue: nick.rate!).ssml()
+        let ssmlRate = Rate.ssml(rawValue: nick.rate!)
         let ssmlPitch = Pitch.fromRawValue(rawValue: nick.pitch!).ssml()
         let ssmlVolume = ssmlVolumes[volumeIndex]
         let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"

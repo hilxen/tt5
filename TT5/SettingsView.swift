@@ -29,7 +29,7 @@ struct SettingsView: View {
     @State private var subscribers: Bool = true
     @State private var broadcaster: Bool = true
     @State private var highlighted: Bool = true
-    @State var rate: Rate = .normal
+    @State var rateValue: Float = Rate.normal.rawValue
     @State var pitch: Pitch = .normal
     @State var voice: Voice = .female
     @State private var showHelp = false
@@ -166,12 +166,11 @@ struct SettingsView: View {
                     HStack {
                         Text("Speech Rate")
                         Spacer()
-                        Picker("", selection: $rate) {
-                            ForEach(Rate.allCases, id: \.self) {
-                                Text($0.description())
-                            }
-                        }
-                        .pickerStyle(.menu)
+                        Slider(
+                            value: $rateValue,
+                            in: Rate.min.rawValue...Rate.max.rawValue,
+                            step: Rate.step
+                        )
                     }
                 }.padding(.leading, 20)
                 HStack {
@@ -197,7 +196,7 @@ struct SettingsView: View {
             channel = settings.first!.channel
             volume = settings.first!.volume
             muted = settings.first!.muted
-            rate = Rate.allCases.first(where: {$0.rawValue == settings.first!.rate}) ?? .normal
+            rateValue = settings.first!.rate
             pitch = Pitch.allCases.first(where: {$0.rawValue == settings.first!.pitch}) ?? .normal
             voice = Voice.allCases.first(where: {$0.rawValue == settings.first!.voice}) ?? .female
             mods = settings.first!.mods
@@ -225,7 +224,7 @@ struct SettingsView: View {
     func save() {
         settings.first!.volume = volume
         settings.first!.muted = muted
-        self.settings.first!.rate = rate.rawValue
+        self.settings.first!.rate = rateValue
         self.settings.first!.pitch = pitch.rawValue
         self.settings.first!.voice = voice.rawValue
         self.settings.first!.mods = mods

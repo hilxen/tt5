@@ -14,17 +14,16 @@ struct TwitchPlayerWebView: UIViewRepresentable {
     @Environment(\.modelContext) private var modelContext
     @Query private var settings: [Settings]
     let shouldRefresh: CurrentValueSubject<Bool, Never>
-    let shouldPlay: CurrentValueSubject<Bool, Never>
     let shouldMute: CurrentValueSubject<Bool, Never>
     private let webView: WKWebView = WKWebView()
     
     func makeUIView(context: Context) -> WKWebView {
         webView.configuration.allowsInlineMediaPlayback = true
         webView.configuration.allowsPictureInPictureMediaPlayback = true
+        webView.navigationDelegate = context.coordinator
         context.coordinator.navigation = reload()
         context.coordinator.webView = self
         context.coordinator.observeChangesRefresh(for: shouldRefresh)
-        context.coordinator.observeChangesPlay(for: shouldPlay)
         context.coordinator.observeChangesMute(for: shouldMute)
         return webView
     }
@@ -44,12 +43,12 @@ struct TwitchPlayerWebView: UIViewRepresentable {
 }
 
 extension TwitchPlayerWebView {
-    class Coordinator {
+    class Coordinator: NSObject, WKNavigationDelegate {
         var navigation: WKNavigation?
         var webView: TwitchPlayerWebView?
         private var cancellableRefresh: AnyCancellable?
-        private var cancellablePlay: AnyCancellable?
         private var cancellableMute: AnyCancellable?
+        private var cancellableHearbeat: AnyCancellable?
         
         func observeChangesRefresh(for shouldRefresh: CurrentValueSubject<Bool, Never>) {
             cancellableRefresh = shouldRefresh
@@ -59,16 +58,86 @@ extension TwitchPlayerWebView {
                 }
         }
         
-        func observeChangesPlay(for shouldPlay: CurrentValueSubject<Bool, Never>) {
-            cancellablePlay = shouldPlay
-                .filter { $0 == true }
-                .sink { [weak self] newValue in
-                    self?.webView?.webView.evaluateJavaScript("document.querySelector(\"#channel-player > div > div.Layout-sc-1xcs6mc-0.cFsYRp.player-controls__left-control-group > div.InjectLayout-sc-1i43xsx-0.kBtJDm > button\").click()") { (result, error) in
-                    }
-                }
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+            
+        }
+        
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            self.triggerPIP(webView: self.webView!.webView)
         }
 
-        func observeChangesMute(for shouldMute: CurrentValueSubject<Bool, Never>) {
+        func triggerPIP(webView: WKWebView) {
+            let javaScript = """
+            (function() {
+                function isVideoInPictureInPicture(video) {
+                    // Check using WebKit API (iOS-specific)
+                    if (video.webkitPresentationMode) {
+                        return video.webkitPresentationMode === 'picture-in-picture';
+                    }
+                    // Fallback to standard Picture-in-Picture API
+                    if (document.pictureInPictureElement) {
+                        return document.pictureInPictureElement === video;
+                    }
+                    return false;
+                }
+                function triggerPictureInPicture(intervalId) {
+                    // document.querySelector(\"#channel-player > div > div.Layout-sc-1xcs6mc-0.cFsYRp.player-controls__left-control-group > div.InjectLayout-sc-1i43xsx-0.kBtJDm > button\").click();
+                    const video = document.querySelector('video');
+                    if (isVideoInPictureInPicture(video)) {
+                        clearInterval(intervalId);
+                        return;
+                    }
+                    if (video) {
+                        if (video.webkitSetPresentationMode) {
+                            video.webkitSetPresentationMode('picture-in-picture');
+                            // clearInterval(intervalId);
+                        } else if (video.requestPictureInPicture) {
+                            video.requestPictureInPicture().then(() => {
+                                // clearInterval(intervalId);
+                            }).catch(error => {
+                                console.error('Failed to enter Picture-in-Picture mode:', error);
+                            });
+                        } else {
+                            console.error('Picture-in-Picture not supported on this video element');
+                        }
+                    } else {
+                        console.error('No video element found');
+                    }
+                }
+
+                function pollForVideoElement(attempts, interval) {
+                    let attempt = 0;
+                    const intervalId = setInterval(() => {
+                        const video = document.querySelector('video');
+                        if (video) {
+                            // clearInterval(intervalId);
+                            setTimeout(() => {
+                                triggerPictureInPicture(intervalId);
+                            }, 2000);
+                        } else if (attempt >= attempts) {
+                            clearInterval(intervalId);
+                            console.error('Video element not found after maximum attempts');
+                        }
+                        attempt++;
+                    }, interval);
+                }
+
+                pollForVideoElement(20, 2000);
+            })();
+            """
+            
+            // Execute the JavaScript in the WKWebView
+            webView.evaluateJavaScript(javaScript) { (result, error) in
+                if let error = error {
+                    print("Error executing JavaScript: \(error)")
+                } else {
+                    print("Picture-in-Picture triggered successfully")
+                }
+            }
+
+        }
+        
+         func observeChangesMute(for shouldMute: CurrentValueSubject<Bool, Never>) {
             cancellableMute = shouldMute
                 .filter { $0 == true }
                 .sink { [weak self] newValue in

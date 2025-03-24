@@ -24,31 +24,14 @@ enum Volume: Int, CaseIterable {
 }
 
 enum Rate: Float, CaseIterable {
-    case slow = 0.2
+    case min = 0.2
     case normal = 0.5
-    case fast = 0.8
-    case hurried = 1.0
+    case max = 1.0
+    static let step: Float = 0.05
     
-    func description() -> String {
-        switch self {
-        case .slow: return "Slow"
-        case .normal: return "Normal"
-        case .fast: return "Fast"
-        case .hurried: return "Hurried"
-        }
-    }
-    
-    func ssml() -> String {
-        switch self {
-        case .slow: return "50%"
-        case .normal: return "default"
-        case .fast: return "150%"
-        case .hurried: return "200%"
-        }
-    }
-    
-    static func fromRawValue(rawValue: Float) -> Rate {
-        return .allCases.first(where: {$0.rawValue == rawValue}) ?? .normal
+    static func ssml(rawValue: Float) -> String {
+        let percent = Int(rawValue * 200)
+        return "\(percent)%"
     }
 }
 
@@ -272,13 +255,13 @@ final class Nick: Identifiable, Codable {
         return name
     }
     
-    func set(overrideDefaults: Bool, muted: Bool, pronunciation: String, voice: Voice, rate: Rate, pitch: Pitch, volume: Volume) {
+    func set(overrideDefaults: Bool, muted: Bool, pronunciation: String, voice: Voice, rateValue: Float, pitch: Pitch, volume: Volume) {
         self.pronunciation = pronunciation
         if overrideDefaults {
             self.muted = muted
             self.voice = voice.rawValue
             self.pitch = pitch.rawValue
-            self.rate = rate.rawValue
+            self.rate = rateValue
             self.volume = volume.rawValue
             self.defaults = false
         } else {

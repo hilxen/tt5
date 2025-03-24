@@ -18,7 +18,7 @@ struct NickView: View {
     @State var pronunciation: String = ""
     @State var overrideDefaults: Bool = false
     @State var volume: Volume = .normal
-    @State var rate: Rate = .normal
+    @State var rateValue: Float = Rate.normal.rawValue
     @State var pitch: Pitch = .normal
     @State var voice: Voice = .female
 
@@ -100,12 +100,11 @@ struct NickView: View {
                 HStack {
                     Text("Speech Rate")
                     Spacer()
-                    Picker("Rate", selection: $rate) {
-                        ForEach(Rate.allCases, id: \.self) {
-                            Text($0.description())
-                        }
-                    }
-                    .pickerStyle(.menu)
+                    Slider(
+                        value: $rateValue,
+                        in: Rate.min.rawValue...Rate.max.rawValue,
+                        step: Rate.step
+                    )
                 }
             }.disabled(!overrideDefaults).padding(.leading, 40)
             Spacer()
@@ -115,7 +114,7 @@ struct NickView: View {
             self.pronunciation = nick.pronunciation ?? ""
             self.overrideDefaults = !nick.defaults
             self.volume = Volume.allCases.first(where: {$0.rawValue == nick.volume}) ?? .normal
-            self.rate = Rate.allCases.first(where: {$0.rawValue == nick.rate}) ?? .normal
+            self.rateValue = nick.rate ?? Rate.normal.rawValue
             self.pitch = Pitch.allCases.first(where: {$0.rawValue == nick.pitch}) ?? .normal
             self.voice = Voice.allCases.first(where: {$0.rawValue == nick.voice}) ?? .female
         }.onDisappear {
@@ -131,7 +130,7 @@ struct NickView: View {
                      muted: muted,
                      pronunciation: pronunciation,
                      voice: voice,
-                     rate: rate,
+                     rateValue: rateValue,
                      pitch: pitch,
                      volume: volume);
         } else {
@@ -139,7 +138,7 @@ struct NickView: View {
                      muted: muted,
                      pronunciation: pronunciation,
                      voice: voice,
-                     rate: rate,
+                     rateValue: rateValue,
                      pitch: pitch,
                      volume: volume);
             modelContext.insert(nick)
