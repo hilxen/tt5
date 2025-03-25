@@ -42,6 +42,7 @@
 		E50E67B42CFCBBE400654252 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		E50E67B62CFCBBE600654252 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E50E67B92CFCBBE600654252 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		E55AFE942D9234F9002C2845 /* 1.log */ = {isa = PBXFileReference; lastKnownFileType = text; path = 1.log; sourceTree = "<group>"; };
 		E57D6DE42D0E77FA0030CBE6 /* TwitchIRC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwitchIRC.swift; sourceTree = "<group>"; };
 		E57D6DE62D0FA89C0030CBE6 /* TwitchPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwitchPlayer.swift; sourceTree = "<group>"; };
 		E57D6DE82D124A0F0030CBE6 /* NickView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NickView.swift; sourceTree = "<group>"; };
@@ -79,6 +80,7 @@
 		E50E67A42CFCBBE300654252 = {
 			isa = PBXGroup;
 			children = (
+				E55AFE942D9234F9002C2845 /* 1.log */,
 				E57D6DEC2D1338570030CBE6 /* fearures.txt */,
 				E50E67AF2CFCBBE300654252 /* TT5 */,
 				E57D6DDD2D0D501D0030CBE6 /* Frameworks */,

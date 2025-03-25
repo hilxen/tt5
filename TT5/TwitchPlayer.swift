@@ -113,7 +113,7 @@ extension TwitchPlayerWebView {
                             // clearInterval(intervalId);
                             setTimeout(() => {
                                 triggerPictureInPicture(intervalId);
-                            }, 2000);
+                            }, 3000);
                         } else if (attempt >= attempts) {
                             clearInterval(intervalId);
                             console.error('Video element not found after maximum attempts');
@@ -122,7 +122,7 @@ extension TwitchPlayerWebView {
                     }, interval);
                 }
 
-                pollForVideoElement(20, 2000);
+                pollForVideoElement(20, 3000);
             })();
             """
             
