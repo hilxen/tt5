@@ -228,8 +228,8 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
        return model.speakerActive && item == model.speakerItem
     }
 
-    func getIcons(_ item: Item) -> [String] {
-        let mutedIcon = (item.nick.muted != settings.first!.muted) ? (item.nick.muted ? "speaker.slash": "speaker") : ""
+    func getIcons(_ item: Item, _ copyOfSettings: Settings) -> [String] {
+        let mutedIcon = (item.nick.muted != copyOfSettings.muted) ? (item.nick.muted ? "speaker.slash": "speaker") : ""
         let soundIcon = (mutedIcon == "speaker.slash") ? mutedIcon : item.skipped ? "play.slash": mutedIcon
 
         var icons: [String] = []
@@ -259,7 +259,8 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
             } else if forceShowSettings {
                 SettingsView(forceShowSettings: $forceShowSettings)
             } else {
-                if !settings.isEmpty && !settings.first!.channel.isEmpty {
+                let copyOfSettings = settings.first!
+                if !copyOfSettings.channel.isEmpty {
                     TwitchPlayerWebView(shouldRefresh: model.shouldRefresh, shouldMute: model.shouldMute)
                         .frame(height: 200)
                         .padding([.all], 5)
@@ -272,7 +273,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                                 NavigationLink(destination: NickView(nick: item.nick)) {
                                     VStack(alignment: .leading, spacing: 0) {
                                         HStack(spacing: 1) {
-                                            ForEach(getIcons(item), id: \.self) { icon in
+                                            ForEach(getIcons(item, copyOfSettings), id: \.self) { icon in
                                                 Image(icon)
                                                     .resizable()
                                                     .scaledToFit()
