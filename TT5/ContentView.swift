@@ -259,8 +259,8 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
             } else if forceShowSettings {
                 SettingsView(forceShowSettings: $forceShowSettings)
             } else {
-                let copyOfSettings = settings.first!
-                if !copyOfSettings.channel.isEmpty {
+                let copyOfSettings = settings.first
+                if copyOfSettings != nil && !copyOfSettings!.channel.isEmpty {
                     TwitchPlayerWebView(shouldRefresh: model.shouldRefresh, shouldMute: model.shouldMute)
                         .frame(height: 200)
                         .padding([.all], 5)
@@ -273,7 +273,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                                 NavigationLink(destination: NickView(nick: item.nick)) {
                                     VStack(alignment: .leading, spacing: 0) {
                                         HStack(spacing: 1) {
-                                            ForEach(getIcons(item, copyOfSettings), id: \.self) { icon in
+                                            ForEach(getIcons(item, copyOfSettings!), id: \.self) { icon in
                                                 Image(icon)
                                                     .resizable()
                                                     .scaledToFit()
