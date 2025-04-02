@@ -26,6 +26,7 @@ final class BannedWordsManager: NSObject {
     let recognizer = NLLanguageRecognizer()
     let synthesizer = AVSpeechSynthesizer()
     let speechDelegate = SpeechDelegate()
+    var log: Log?
     
     override init() {
         super.init()
@@ -81,14 +82,14 @@ final class BannedWordsManager: NSObject {
             speechDelegate.speechRecognizer!.supportsOnDeviceRecognition = true
             speechDelegate.speechRecognizer!.recognitionTask(with: recognitionRequest) { result, error in
                 guard let result = result else {
-                    print("There was an error: \(error.debugDescription)")
+                    self.log?.print("There was an error: \(error.debugDescription)")
                     complete("", [], [], voiceId)
                     return
                 }
                 DispatchQueue.main.async {
                     let isFinal = result.isFinal
-                    print("isFinal = \(isFinal) Text \(result.bestTranscription.formattedString)")
-                    result.transcriptions.forEach { print($0.formattedString) }
+                    self.log?.print("isFinal = \(isFinal) Text \(result.bestTranscription.formattedString)")
+                    result.transcriptions.forEach { self.log?.print($0.formattedString) }
                     var matchedBannedWords: [String] = []
                     var notMatchedWords: [String] = []
                     var matchedWords: [String] = []

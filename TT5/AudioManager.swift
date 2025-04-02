@@ -52,6 +52,8 @@ final class AudioManager: NSObject {
     private var player: AVQueuePlayer?
     private var session = AVAudioSession.sharedInstance()
     private var volume: Int = 5
+    private var log: Log?
+    
     let bannedWordsManager = BannedWordsManager()
     let volumes: [Float] = [0.01, 0.0151, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32, 64]
     let ssmlVolumes: [String] = ["silent", "-36dB", "-27dB", "-18dB", "-9dB", "+0dB", "+9dB", "+18dB", "+27dB", "+36dB", "+44dB"]
@@ -62,6 +64,11 @@ final class AudioManager: NSObject {
     override init() {
         super.init()
         speechTools.synthesizer.delegate = self
+    }
+    
+    func setLog(_ log: Log) {
+        self.log = log
+        bannedWordsManager.log = log
     }
     
     func activateSession() {
@@ -182,12 +189,12 @@ final class AudioManager: NSObject {
                       enabledLanguages: [Language]) {
         let nick = item.nick
         if utterances.count > 5 {
-            print("speech skipped", nick.name, "queue", utterances.count, "> 5")
+            log?.print("speech skipped", nick.name, "queue", String(utterances.count), "> 5")
             item.skipped = true
             return
         }
         if !nick.defaults && nick.muted {
-            print("nick muted", nick.name)
+            log?.print("nick muted", nick.name)
             item.skipped = true
             return
         }
@@ -198,9 +205,9 @@ final class AudioManager: NSObject {
                 || (nick.mod! && settings.mods)
                 || (nick.broadcaster! && settings.broadcaster)
                 || (item.messageId == "highlighted-message" && settings.highlighted) {
-                print("nick unmuted by role", nick.name)
+                log?.print("nick unmuted by role", nick.name)
             } else {
-                print("nick muted by default", nick.name)
+                log?.print("nick muted by default", nick.name)
                 item.skipped = true
                 return
             }
@@ -235,7 +242,7 @@ final class AudioManager: NSObject {
         let ssmlPitch = Pitch.fromRawValue(rawValue: nick.pitch!).ssml()
         let ssmlVolume = ssmlVolumes[volumeIndex]
         let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
-        print(ssml)
+        log?.print(ssml)
 
         var voiceId: String
         if speechTools.recognizer.languageConstraints.count > 1 {
@@ -245,11 +252,11 @@ final class AudioManager: NSObject {
         } else {
             voiceId = speechTools.voices.values.first?[nick.voice!] ?? "com.apple.voice.compact.en-US.Samantha"
         }
-        print("queued speech", nick.name, nick.voice!,
-              "volume", ssmlVolume, volumes[volumeIndex],
-              "rate", ssmlRate, nick.rate!,
-              "pitch", ssmlPitch, nick.pitch!,
-              "queue size", utterances.count)
+        log?.print("queued speech", nick.name, nick.voice!,
+              "volume", ssmlVolume, String(volumes[volumeIndex]),
+              "rate", ssmlRate, String(nick.rate!),
+              "pitch", String(ssmlPitch), String(nick.pitch!),
+              "queue size", String(utterances.count))
         
         DispatchQueue.global(qos: .background).async {
             self.speak(item: item, voiceId: voiceId, ssml: ssml)
@@ -283,7 +290,7 @@ final class AudioManager: NSObject {
         do {
             try session.setActive(false, options: .notifyOthersOnDeactivation)
         } catch let error as NSError {
-            print("Failed to deactivate audio session: \(error.localizedDescription)")
+            log?.print("Failed to deactivate audio session: \(error.localizedDescription)")
         }
     }
 }
@@ -291,14 +298,14 @@ final class AudioManager: NSObject {
 extension AudioManager: AVSpeechSynthesizerDelegate {
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
         if let item = utterances[utterance] {
-            print("started speaking", item.nick.name, "queue size", utterances.count)
+            log?.print("started speaking", item.nick.name, "queue size", String(utterances.count))
             delegate?.speechStarted(item: item)
         }
     }
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         if let item = utterances.removeValue(forKey: utterance) {
-            print("stopped speaking", item.nick.name, "queue size", utterances.count)
+            log?.print("stopped speaking", item.nick.name, "queue size", String(utterances.count))
             delegate?.speechFinished(item: item)
         }
     }

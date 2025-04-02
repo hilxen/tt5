@@ -185,6 +185,12 @@ struct SettingsView: View {
                         Text("Profiles").padding(.leading, 15)
                     }
                 }.padding(.vertical, 5)
+                HStack {
+                    NavigationLink(destination: LogView()) {
+                        Image(systemName: "list.bullet.clipboard")
+                        Text("Log").padding(.leading, 20)
+                    }
+                }.padding(.vertical, 5)
             }.listStyle(PlainListStyle())
             HStack {
                 Button("Save") {

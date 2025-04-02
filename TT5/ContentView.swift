@@ -50,12 +50,28 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     let itemHighlightColor = Color(red: 231/255, green: 211/255, blue: 253/255)
     let itemAttentionColor = Color(red: 255/255, green: 200/255, blue: 200/255)
     let itemSelectedColor = Color(red: 255/255, green: 255/255, blue: 117/255)
+    let log = Log()
 
     init() {
         twitchIRC.delegate = self
         audioManager.delegate = self
     }
     
+    func print(_ message: String...) {
+        print(.INFO, message)
+    }
+    
+    func print(_ level: LogLevel, _ message: String...) {
+        print(level, message)
+    }
+    
+    func print(_ level: LogLevel, _ message: [String]) {
+        DispatchQueue.main.async {
+            log.print(level, message)
+        }
+    }
+
+        
     func initSettings() {
         if settings.isEmpty {
             modelContext.insert(Settings(channel: "", volume: 1, muted: false, rate: .normal, pitch: .normal, voice: .female, mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true, bannedWordsEnabled: false))
@@ -65,7 +81,8 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
 
     
     func onAppear() {
-        print("****** ContentView: onAppear ******")
+        log.setModelContext(modelContext)
+        //print("****** ContentView: onAppear ******")
         initSettings()
         
         let _settings = settings.first!
@@ -83,6 +100,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
             ]
         }
         audioManager.speechTools.voices = enabledVoices
+        audioManager.setLog(log)
         checkNeedRefresh()
     }
     
@@ -100,7 +118,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     }
     
     func onDisappear() {
-        print("****** ContentView: onDisappear ******")
+        //print("****** ContentView: onDisappear ******")
     }
     
     func didBecomeActiveNotification() {
@@ -201,7 +219,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     func saveNewNicks() {
         for nick in model.newNicks.values {
             modelContext.insert(nick)
-            print("Saved new nick", nick.name)
+            self.print("Saved new nick", nick.name)
         }
         model.newNicks.removeAll()
     }

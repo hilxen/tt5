@@ -12,6 +12,8 @@ protocol TwitchIRCDelegate {
     func onMessage(pm: PrivateMessage)
     func onNotification(text: String)
     func heartbeat()
+    func print(_ message: String...)
+    func print(_ level: LogLevel, _ message: String...)
 }
 
 
@@ -28,6 +30,7 @@ class TwitchIRC: WebSocketConnectionDelegate {
     
     func connect() {
         if webSocketConnection == nil || !connected {
+            connected = true
             webSocketConnection = WebSocketTaskConnection(url: URL(string: "wss://irc-ws.chat.twitch.tv/")!)
             webSocketConnection.delegate = self
             webSocketConnection.connect()
@@ -44,7 +47,7 @@ class TwitchIRC: WebSocketConnectionDelegate {
     }
 
     func onConnected(connection: WebSocketConnection) {
-        print("Connected")
+        delegate?.print("Connected")
         let nick = "justinfan\(Int.random(in: 0...80000) + 1000)"
         let pass = "SCHMOOPIIE"
         let caps = [Capability.tags, Capability.commands];
@@ -54,20 +57,19 @@ class TwitchIRC: WebSocketConnectionDelegate {
         if !channel.isEmpty {
             join(channel: channel)
         }
-        connected = true
     }
     
     func onDisconnected(connection: WebSocketConnection, error: Error?) {
         if let error = error {
-            print("Disconnected with error:\(error)")
+            delegate?.print(.WARNING, "Disconnected with error:\(error)")
         } else {
-            print("Disconnected normally")
+            delegate?.print("Disconnected normally")
         }
         connected = false
     }
     
     func onError(connection: WebSocketConnection, error: Error) {
-        print("Connection error:\(error)")
+        delegate?.print(.WARNING, "Connection error:\(error)")
     }
     
     func join(channel: String) {
@@ -82,12 +84,12 @@ class TwitchIRC: WebSocketConnectionDelegate {
 
     func send(_ message: OutgoingMessage) {
         let text = message.serialize()
-        print("Outgoing message: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
+        delegate?.print("Outgoing message: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
         webSocketConnection.send(text: text)
     }
     
     func onMessage(connection: WebSocketConnection, text: String) {
-        print("Incoming message: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
+        delegate?.print("Incoming message: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
         let twitchMessages: [(message: IncomingMessage?, text: String)] = IncomingMessage.parse(ircOutput: text)
         delegate?.heartbeat()
         for (message, _) in twitchMessages {
@@ -116,6 +118,6 @@ class TwitchIRC: WebSocketConnectionDelegate {
     }
     
     func onMessage(connection: WebSocketConnection, data: Data) {
-        print("Data message: \(data)")
+        delegate?.print("Data message: \(data)")
     }
 }

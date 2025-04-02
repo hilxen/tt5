@@ -439,3 +439,82 @@ final class BannedWord: Identifiable, Codable {
         }
     }
 }
+
+
+enum LogLevel: String {
+    case DEBUG
+    case INFO
+    case WARNING
+    case ERROR
+}
+
+
+@Model
+final class LogItem {
+    var timestamp: Date
+    var level: String
+    var message: [String]
+    
+    init(_ timestamp: Date = Date(), level: LogLevel = .INFO, message: [String]) {
+        self.timestamp = timestamp
+        self.level = level.rawValue
+        self.message = message
+        print(self.timestamp, self.level, self.message)
+    }
+}
+
+
+final class Log {
+    private var modelContext: ModelContext?
+    
+    func setModelContext(_ modelContext: ModelContext) {
+        self.modelContext = modelContext
+    }
+    
+    func print(_ level: LogLevel, message: String...) {
+        modelContext?.insert(LogItem(level: level, message: message))
+        try? modelContext?.save()
+        purge()
+    }
+    
+    func print(_ level: LogLevel, _ message: [String]) {
+        modelContext?.insert(LogItem(level: level, message: message))
+        try? modelContext?.save()
+        purge()
+    }
+    
+    func print(_ message: String...) {
+        modelContext?.insert(LogItem(message: message))
+        try? modelContext?.save()
+        purge()
+    }
+    
+    func print(_ message: [String]) {
+        modelContext?.insert(LogItem(message: message))
+        try? modelContext?.save()
+        purge()
+    }
+    
+    private let MAX_ITEMS_COUNT: Int = 1024
+    private let DELETE_BATCH: Int = 128
+    
+    private func purge() {
+        if let modelContext = modelContext {
+            let descriptor = FetchDescriptor<LogItem>(
+                sortBy: [SortDescriptor(\LogItem.timestamp, order: .forward)]
+            )
+            let totalCount = try! modelContext.fetchCount(descriptor)
+            if totalCount > MAX_ITEMS_COUNT {
+                var limitedDescriptor = FetchDescriptor<LogItem>(
+                    sortBy: [SortDescriptor(\LogItem.timestamp, order: .forward)]
+                )
+                limitedDescriptor.fetchLimit = DELETE_BATCH
+                let oldestItems = try! modelContext.fetch(limitedDescriptor)
+                for item in oldestItems {
+                    modelContext.delete(item)
+                }
+                try! modelContext.save()
+            }
+        }
+    }
+}
