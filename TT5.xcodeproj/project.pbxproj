@@ -15,6 +15,7 @@
 		E50E67B52CFCBBE400654252 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E67B42CFCBBE400654252 /* Item.swift */; };
 		E50E67B72CFCBBE600654252 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E50E67B62CFCBBE600654252 /* Assets.xcassets */; };
 		E50E67BA2CFCBBE600654252 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E50E67B92CFCBBE600654252 /* Preview Assets.xcassets */; };
+		E528ABF32D9B7EFC003BF82F /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E528ABF22D9B7EF7003BF82F /* LogView.swift */; };
 		E57D6DE02D0D50450030CBE6 /* PopupView in Frameworks */ = {isa = PBXBuildFile; productRef = E57D6DDF2D0D50450030CBE6 /* PopupView */; };
 		E57D6DE32D0E67CB0030CBE6 /* SwipeActions in Frameworks */ = {isa = PBXBuildFile; productRef = E57D6DE22D0E67CB0030CBE6 /* SwipeActions */; };
 		E57D6DE52D0E77FB0030CBE6 /* TwitchIRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E57D6DE42D0E77FA0030CBE6 /* TwitchIRC.swift */; };
@@ -42,6 +43,7 @@
 		E50E67B42CFCBBE400654252 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		E50E67B62CFCBBE600654252 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E50E67B92CFCBBE600654252 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		E528ABF22D9B7EF7003BF82F /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		E55AFE942D9234F9002C2845 /* 1.log */ = {isa = PBXFileReference; lastKnownFileType = text; path = 1.log; sourceTree = "<group>"; };
 		E57D6DE42D0E77FA0030CBE6 /* TwitchIRC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwitchIRC.swift; sourceTree = "<group>"; };
 		E57D6DE62D0FA89C0030CBE6 /* TwitchPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwitchPlayer.swift; sourceTree = "<group>"; };
@@ -99,6 +101,7 @@
 		E50E67AF2CFCBBE300654252 /* TT5 */ = {
 			isa = PBXGroup;
 			children = (
+				E528ABF22D9B7EF7003BF82F /* LogView.swift */,
 				E5EEC7FF2D3376E900CBFE60 /* BannedWordsManager.swift */,
 				E5EEC7FD2D2E251800CBFE60 /* BannedWordsView.swift */,
 				E5EEC7F92D2AF4BB00CBFE60 /* ProfilesView.swift */,
@@ -231,6 +234,7 @@
 				E5B995412D06730700BE7865 /* Settings.swift in Sources */,
 				E50E67B32CFCBBE400654252 /* ContentView.swift in Sources */,
 				E57D6DE52D0E77FB0030CBE6 /* TwitchIRC.swift in Sources */,
+				E528ABF32D9B7EFC003BF82F /* LogView.swift in Sources */,
 				E50E67B52CFCBBE400654252 /* Item.swift in Sources */,
 				E57D6DF02D14EDC10030CBE6 /* NickListView.swift in Sources */,
 				E5EEC7FE2D2E252600CBFE60 /* BannedWordsView.swift in Sources */,
@@ -388,7 +392,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.1;
+				MARKETING_VERSION = 1.2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = Hilxen.TT5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -423,7 +427,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.1;
+				MARKETING_VERSION = 1.2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = Hilxen.TT5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
