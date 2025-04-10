@@ -21,13 +21,14 @@ class Model: ObservableObject {
     @Published var newNicks = [String: Nick]()
     @Published var shouldRefresh = CurrentValueSubject<Bool, Never>(false)
     @Published var shouldMute = CurrentValueSubject<Bool, Never>(false)
+    @Published var shouldHeartbeat = CurrentValueSubject<Bool, Never>(false)
     @Published var speakerItem: Item?
     @Published var speakerActive: Bool = false
     @Published var speakerCountdown: Int = -1
     @Published var lastHeartbeat: Int = Int(CFAbsoluteTimeGetCurrent())
 }
 
-struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
+struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerDelegate {
     @Environment(\.modelContext) private var modelContext
     @Query private var settings: [Settings]
     @Query private var nicks: [Nick]
@@ -41,6 +42,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     @State private var scale = 18.0
     @State private var vibrate: Bool = false
     @State private var previousChannel: String = ""
+    @State private var isVideoMuted: Bool = false
     
     @ObservedObject private var model = Model()
     let twitchIRC = TwitchIRC()
@@ -176,6 +178,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
             twitchIRC.disconnect()
         }
         checkNeedRefresh()
+        model.shouldHeartbeat.send(true)
     }
     
     func speechStarted(item: Item) {
@@ -186,6 +189,10 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
     
     func speechFinished(item: Item) {
         model.speakerCountdown = 2
+    }
+    
+    func videoMuteState(muted: Bool) {
+        isVideoMuted = muted
     }
     
     func getNick(name: String) -> Nick {
@@ -261,7 +268,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
             } else {
                 let copyOfSettings = settings.first
                 if copyOfSettings != nil && !copyOfSettings!.channel.isEmpty {
-                    TwitchPlayerWebView(shouldRefresh: model.shouldRefresh, shouldMute: model.shouldMute)
+                    TwitchPlayerWebView(shouldRefresh: model.shouldRefresh, shouldMute: model.shouldMute, shouldHeartbeat: model.shouldHeartbeat, delegate: self)
                         .frame(height: 200)
                         .padding([.all], 5)
                 }
@@ -344,7 +351,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate {
                         Button {
                             model.shouldMute.send(true)
                         } label: {
-                            Image(systemName: "speaker").resizable().scaledToFit().frame(height: 25).padding(.trailing, 8)
+                            Image(systemName: isVideoMuted ? "speaker.slash.circle": "speaker.wave.2.circle").resizable().scaledToFit().frame(height: 28).padding(.trailing, 8)
                         }
                         Button {
                             model.shouldRefresh.send(true)

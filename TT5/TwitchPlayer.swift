@@ -10,11 +10,18 @@ import SwiftUI
 import SwiftData
 import Combine
 
+protocol TwitchPlayerDelegate {
+    func videoMuteState(muted: Bool)
+}
+
+
 struct TwitchPlayerWebView: UIViewRepresentable {
     @Environment(\.modelContext) private var modelContext
     @Query private var settings: [Settings]
     let shouldRefresh: CurrentValueSubject<Bool, Never>
     let shouldMute: CurrentValueSubject<Bool, Never>
+    let shouldHeartbeat: CurrentValueSubject<Bool, Never>
+    let delegate: TwitchPlayerDelegate
     private let webView: WKWebView = WKWebView()
     
     func makeUIView(context: Context) -> WKWebView {
@@ -25,6 +32,7 @@ struct TwitchPlayerWebView: UIViewRepresentable {
         context.coordinator.webView = self
         context.coordinator.observeChangesRefresh(for: shouldRefresh)
         context.coordinator.observeChangesMute(for: shouldMute)
+        context.coordinator.observeChangesHeartbeat(for: shouldHeartbeat)
         return webView
     }
     
@@ -137,13 +145,89 @@ extension TwitchPlayerWebView {
 
         }
         
-         func observeChangesMute(for shouldMute: CurrentValueSubject<Bool, Never>) {
+        func observeChangesMute(for shouldMute: CurrentValueSubject<Bool, Never>) {
             cancellableMute = shouldMute
                 .filter { $0 == true }
                 .sink { [weak self] newValue in
                     self?.webView?.webView.evaluateJavaScript("document.querySelector(\"#channel-player > div > div.Layout-sc-1xcs6mc-0.cFsYRp.player-controls__left-control-group > div:nth-child(2) > div > div.Layout-sc-1xcs6mc-0.hdWbbR > div > button\").click()") { (result, error) in
                     }
                 }
+        }
+        
+        func observeChangesHeartbeat(for shouldHearbeat: CurrentValueSubject<Bool, Never>) {
+            cancellableHearbeat = shouldHearbeat
+                .filter { $0 == true }
+                .sink { [weak self] newValue in
+                    self?.isVideoMuted { isMuted, error in
+                        if let error = error {
+                            print("Error checking mute state: \(error)")
+                            return
+                        }
+                        if let isMuted = isMuted {
+                            self?.webView?.delegate.videoMuteState(muted: isMuted)
+                        }
+                    }
+                }
+        }
+        
+        func isVideoMuted(completion: @escaping (Bool?, Error?) -> Void) {
+            let javaScript = """
+            (function() {
+                const video = document.querySelector('video');
+                if (video) {
+                    return video.muted;
+                } else {
+                    throw new Error('No video element found');
+                }
+            })();
+            """
+            
+            self.webView?.webView.evaluateJavaScript(javaScript) { (result, error) in
+                if let error = error {
+                    completion(nil, error)
+                    return
+                }
+                
+                if let isMuted = result as? Bool {
+                    completion(isMuted, nil)
+                } else {
+                    let error = NSError(domain: "VideoMuteCheckError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to determine mute state"])
+                    completion(nil, error)
+                }
+            }
+        }
+        
+        // Function to mute or unmute the video
+        func setVideoMuteState(mute: Bool, completion: @escaping (Bool, Error?) -> Void) {
+            let javaScript = """
+            (function() {
+                return new Promise((resolve, reject) => {
+                    const video = document.querySelector('video');
+                    if (video) {
+                        setTimeout(() => {
+                            video.muted = \(mute ? "true" : "false");
+                            resolve(true);
+                        }, 1000); // 1-second delay
+                    } else {
+                        reject(new Error('No video element found'));
+                    }
+                });
+            })();
+            """
+            
+            self.webView?.webView.evaluateJavaScript(javaScript) { (result, error) in
+                if let error = error {
+                    completion(false, error)
+                    return
+                }
+                
+                if let success = result as? Bool, success {
+                    completion(true, nil)
+                } else {
+                    let error = NSError(domain: "VideoMuteSetError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to set mute state"])
+                    completion(false, error)
+                }
+            }
         }
     }
 }
