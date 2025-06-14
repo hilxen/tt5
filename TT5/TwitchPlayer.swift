@@ -149,8 +149,8 @@ extension TwitchPlayerWebView {
             cancellableMute = shouldMute
                 .filter { $0 == true }
                 .sink { [weak self] newValue in
-                    self?.webView?.webView.evaluateJavaScript("document.querySelector(\"#channel-player > div > div.Layout-sc-1xcs6mc-0.cFsYRp.player-controls__left-control-group > div:nth-child(2) > div > div.Layout-sc-1xcs6mc-0.hdWbbR > div > button\").click()") { (result, error) in
-                    }
+                    self?.toggleVideoMuteState()
+                    self?.isVideoMuted()
                 }
         }
         
@@ -158,19 +158,11 @@ extension TwitchPlayerWebView {
             cancellableHearbeat = shouldHearbeat
                 .filter { $0 == true }
                 .sink { [weak self] newValue in
-                    self?.isVideoMuted { isMuted, error in
-                        if let error = error {
-                            print("Error checking mute state: \(error)")
-                            return
-                        }
-                        if let isMuted = isMuted {
-                            self?.webView?.delegate.videoMuteState(muted: isMuted)
-                        }
-                    }
+                    self?.isVideoMuted()
                 }
         }
         
-        func isVideoMuted(completion: @escaping (Bool?, Error?) -> Void) {
+        func isVideoMuted() {
             let javaScript = """
             (function() {
                 const video = document.querySelector('video');
@@ -183,31 +175,23 @@ extension TwitchPlayerWebView {
             """
             
             self.webView?.webView.evaluateJavaScript(javaScript) { (result, error) in
-                if let error = error {
-                    completion(nil, error)
-                    return
-                }
-                
                 if let isMuted = result as? Bool {
-                    completion(isMuted, nil)
+                    self.webView?.delegate.videoMuteState(muted: isMuted)
                 } else {
                     let error = NSError(domain: "VideoMuteCheckError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to determine mute state"])
-                    completion(nil, error)
+                    print("Error checking mute state: \(error)")
                 }
             }
         }
         
-        // Function to mute or unmute the video
-        func setVideoMuteState(mute: Bool, completion: @escaping (Bool, Error?) -> Void) {
+        func toggleVideoMuteState() {
             let javaScript = """
             (function() {
                 return new Promise((resolve, reject) => {
                     const video = document.querySelector('video');
                     if (video) {
-                        setTimeout(() => {
-                            video.muted = \(mute ? "true" : "false");
-                            resolve(true);
-                        }, 1000); // 1-second delay
+                        video.muted = !video.muted;
+                        resolve(true);
                     } else {
                         reject(new Error('No video element found'));
                     }
@@ -216,17 +200,6 @@ extension TwitchPlayerWebView {
             """
             
             self.webView?.webView.evaluateJavaScript(javaScript) { (result, error) in
-                if let error = error {
-                    completion(false, error)
-                    return
-                }
-                
-                if let success = result as? Bool, success {
-                    completion(true, nil)
-                } else {
-                    let error = NSError(domain: "VideoMuteSetError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to set mute state"])
-                    completion(false, error)
-                }
             }
         }
     }
