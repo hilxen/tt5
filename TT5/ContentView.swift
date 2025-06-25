@@ -16,6 +16,8 @@ import AVFoundation
 import CoreFoundation
 
 
+
+
 class Model: ObservableObject {
     @Published var list = [Item]()
     @Published var newNicks = [String: Nick]()
@@ -43,6 +45,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
     @State private var vibrate: Bool = false
     @State private var previousChannel: String = ""
     @State private var isVideoMuted: Bool = false
+    @StateObject private var volumeObserver = VolumeObserver()
     
     @ObservedObject private var model = Model()
     let twitchIRC = TwitchIRC()
@@ -320,6 +323,11 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                             }
                         }
                     })
+                    .onChange(of: volumeObserver.volume) { oldValue, newValue in
+                        // Perform actions when the volume changes
+                        print("Volume changed from \(oldValue) to \(newValue)")
+                        audioManager.announce(settings: settings.first!, text: "\(Int(round(newValue*16)))")
+                    }
                     .onAppear {
                         onAppear()
                     }

@@ -271,6 +271,23 @@ final class AudioManager: NSObject {
         speechTools.synthesizer.speak(utterance)
     }
     
+    func announce(settings: Settings, text: String) {
+        var volumeIndex = settings.volume
+        if volumeIndex < 0 { volumeIndex = 0 }
+        else if volumeIndex > volumes.endIndex { volumeIndex = volumes.endIndex }
+
+        let ssmlRate = Rate.ssml(rawValue: settings.rate)
+        let ssmlPitch = Pitch.fromRawValue(rawValue: settings.pitch).ssml()
+        let ssmlVolume = ssmlVolumes[volumeIndex]
+        let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(text.escapedForXML())</prosody></speak>"
+
+        activateSession()
+        let voiceId = speechTools.voices.values.first?[settings.voice] ?? "com.apple.voice.compact.en-US.Samantha"
+        let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
+        utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId)
+        speechTools.synthesizer.speak(utterance)
+    }
+    
     func startAudio(url: String) {
         activateSession()
         let url = URL(string: url)
