@@ -22,6 +22,9 @@ The app can be put into the background, so you can run other streaming apps like
 - Mute/unmute nicks by role or individually
 - Customize nick's pronunciation
 
+**New in version 1.3**
+- announce speech volume changes
+
 **New in version 1.2**
 - automatically starts stream preview in picture-in-picture mode, this puts the app into the background
 - adjust speech rate with a slider
