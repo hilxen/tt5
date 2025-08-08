@@ -15,17 +15,17 @@
 		E50E67B52CFCBBE400654252 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E67B42CFCBBE400654252 /* Item.swift */; };
 		E50E67B72CFCBBE600654252 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E50E67B62CFCBBE600654252 /* Assets.xcassets */; };
 		E50E67BA2CFCBBE600654252 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E50E67B92CFCBBE600654252 /* Preview Assets.xcassets */; };
+		E512C70B2E450FF500DDC590 /* TwitchIRC in Frameworks */ = {isa = PBXBuildFile; productRef = E512C70A2E450FF500DDC590 /* TwitchIRC */; };
+		E512C7132E456DCF00DDC590 /* CustomRewardListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E512C7122E456DCF00DDC590 /* CustomRewardListView.swift */; };
+		E512C7152E456E9200DDC590 /* CustomRewardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E512C7142E456E9200DDC590 /* CustomRewardView.swift */; };
 		E528ABF32D9B7EFC003BF82F /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E528ABF22D9B7EF7003BF82F /* LogView.swift */; };
 		E5592FC42E0BB23900588AA2 /* VolumeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5592FC32E0BB23700588AA2 /* VolumeObserver.swift */; };
-		E57D6DE02D0D50450030CBE6 /* PopupView in Frameworks */ = {isa = PBXBuildFile; productRef = E57D6DDF2D0D50450030CBE6 /* PopupView */; };
-		E57D6DE32D0E67CB0030CBE6 /* SwipeActions in Frameworks */ = {isa = PBXBuildFile; productRef = E57D6DE22D0E67CB0030CBE6 /* SwipeActions */; };
 		E57D6DE52D0E77FB0030CBE6 /* TwitchIRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E57D6DE42D0E77FA0030CBE6 /* TwitchIRC.swift */; };
 		E57D6DE72D0FA89D0030CBE6 /* TwitchPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E57D6DE62D0FA89C0030CBE6 /* TwitchPlayer.swift */; };
 		E57D6DE92D124A200030CBE6 /* NickView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E57D6DE82D124A0F0030CBE6 /* NickView.swift */; };
 		E57D6DF02D14EDC10030CBE6 /* NickListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E57D6DEF2D14EDB50030CBE6 /* NickListView.swift */; };
 		E57D6DF22D1513D90030CBE6 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E57D6DF12D1513D10030CBE6 /* HelpView.swift */; };
 		E5B9951C2D0522E500BE7865 /* WebSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B9951B2D0522E500BE7865 /* WebSocketConnection.swift */; };
-		E5B9951F2D052FB900BE7865 /* TwitchIRC in Frameworks */ = {isa = PBXBuildFile; productRef = E5B9951E2D052FB900BE7865 /* TwitchIRC */; };
 		E5B995232D0579CD00BE7865 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B995222D0579CD00BE7865 /* AudioManager.swift */; };
 		E5B995412D06730700BE7865 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B995402D06730700BE7865 /* Settings.swift */; };
 		E5D977872D081472002A8DE1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5D977862D081467002A8DE1 /* SettingsView.swift */; };
@@ -44,6 +44,9 @@
 		E50E67B42CFCBBE400654252 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		E50E67B62CFCBBE600654252 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E50E67B92CFCBBE600654252 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		E512C7082E450E0400DDC590 /* github-token.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "github-token.txt"; sourceTree = "<group>"; };
+		E512C7122E456DCF00DDC590 /* CustomRewardListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomRewardListView.swift; sourceTree = "<group>"; };
+		E512C7142E456E9200DDC590 /* CustomRewardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomRewardView.swift; sourceTree = "<group>"; };
 		E528ABF22D9B7EF7003BF82F /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		E5592FC32E0BB23700588AA2 /* VolumeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeObserver.swift; sourceTree = "<group>"; };
 		E55AFE942D9234F9002C2845 /* 1.log */ = {isa = PBXFileReference; lastKnownFileType = text; path = 1.log; sourceTree = "<group>"; };
@@ -72,9 +75,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E57D6DE02D0D50450030CBE6 /* PopupView in Frameworks */,
-				E57D6DE32D0E67CB0030CBE6 /* SwipeActions in Frameworks */,
-				E5B9951F2D052FB900BE7865 /* TwitchIRC in Frameworks */,
+				E512C70B2E450FF500DDC590 /* TwitchIRC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +85,7 @@
 		E50E67A42CFCBBE300654252 = {
 			isa = PBXGroup;
 			children = (
+				E512C7082E450E0400DDC590 /* github-token.txt */,
 				E55AFE942D9234F9002C2845 /* 1.log */,
 				E57D6DEC2D1338570030CBE6 /* fearures.txt */,
 				E50E67AF2CFCBBE300654252 /* TT5 */,
@@ -127,6 +129,8 @@
 				E5B995222D0579CD00BE7865 /* AudioManager.swift */,
 				E5B995402D06730700BE7865 /* Settings.swift */,
 				E50996FD2D1A91FD008ED3F5 /* LaunchScreen.storyboard */,
+				E512C7142E456E9200DDC590 /* CustomRewardView.swift */,
+				E512C7122E456DCF00DDC590 /* CustomRewardListView.swift */,
 			);
 			path = TT5;
 			sourceTree = "<group>";
@@ -166,9 +170,7 @@
 			);
 			name = TT5;
 			packageProductDependencies = (
-				E5B9951E2D052FB900BE7865 /* TwitchIRC */,
-				E57D6DDF2D0D50450030CBE6 /* PopupView */,
-				E57D6DE22D0E67CB0030CBE6 /* SwipeActions */,
+				E512C70A2E450FF500DDC590 /* TwitchIRC */,
 			);
 			productName = TT5;
 			productReference = E50E67AD2CFCBBE300654252 /* TT5.app */;
@@ -199,10 +201,7 @@
 			);
 			mainGroup = E50E67A42CFCBBE300654252;
 			packageReferences = (
-				E5B9951D2D052FB900BE7865 /* XCRemoteSwiftPackageReference "TwitchIRC" */,
-				E57D6DDE2D0D50450030CBE6 /* XCRemoteSwiftPackageReference "PopupView" */,
-				E57D6DE12D0E67CB0030CBE6 /* XCRemoteSwiftPackageReference "SwipeActions" */,
-				E5592FC22E0BB09400588AA2 /* XCRemoteSwiftPackageReference "JPSVolumeButtonHandler" */,
+				E512C7092E450FF500DDC590 /* XCRemoteSwiftPackageReference "TwitchIRC" */,
 			);
 			productRefGroup = E50E67AE2CFCBBE300654252 /* Products */;
 			projectDirPath = "";
@@ -232,6 +231,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E5592FC42E0BB23900588AA2 /* VolumeObserver.swift in Sources */,
+				E512C7132E456DCF00DDC590 /* CustomRewardListView.swift in Sources */,
+				E512C7152E456E9200DDC590 /* CustomRewardView.swift in Sources */,
 				E5D977872D081472002A8DE1 /* SettingsView.swift in Sources */,
 				E5EEC8002D3376EF00CBFE60 /* BannedWordsManager.swift in Sources */,
 				E57D6DF22D1513D90030CBE6 /* HelpView.swift in Sources */,
@@ -381,7 +382,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"TT5/Preview Content\"";
 				DEVELOPMENT_TEAM = ;
 				ENABLE_PREVIEWS = YES;
@@ -397,7 +398,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.1;
+				MARKETING_VERSION = 1.4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = Hilxen.TT5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -416,7 +417,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"TT5/Preview Content\"";
 				DEVELOPMENT_TEAM = ;
 				ENABLE_PREVIEWS = YES;
@@ -432,7 +433,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.1;
+				MARKETING_VERSION = 1.4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = Hilxen.TT5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -469,31 +470,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		E5592FC22E0BB09400588AA2 /* XCRemoteSwiftPackageReference "JPSVolumeButtonHandler" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/jpsim/JPSVolumeButtonHandler.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.5;
-			};
-		};
-		E57D6DDE2D0D50450030CBE6 /* XCRemoteSwiftPackageReference "PopupView" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/exyte/PopupView";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.1.4;
-			};
-		};
-		E57D6DE12D0E67CB0030CBE6 /* XCRemoteSwiftPackageReference "SwipeActions" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/c-villain/SwipeActions";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.4.1;
-			};
-		};
-		E5B9951D2D052FB900BE7865 /* XCRemoteSwiftPackageReference "TwitchIRC" */ = {
+		E512C7092E450FF500DDC590 /* XCRemoteSwiftPackageReference "TwitchIRC" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/MahdiBM/TwitchIRC";
 			requirement = {
@@ -504,19 +481,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E57D6DDF2D0D50450030CBE6 /* PopupView */ = {
+		E512C70A2E450FF500DDC590 /* TwitchIRC */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E57D6DDE2D0D50450030CBE6 /* XCRemoteSwiftPackageReference "PopupView" */;
-			productName = PopupView;
-		};
-		E57D6DE22D0E67CB0030CBE6 /* SwipeActions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E57D6DE12D0E67CB0030CBE6 /* XCRemoteSwiftPackageReference "SwipeActions" */;
-			productName = SwipeActions;
-		};
-		E5B9951E2D052FB900BE7865 /* TwitchIRC */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E5B9951D2D052FB900BE7865 /* XCRemoteSwiftPackageReference "TwitchIRC" */;
+			package = E512C7092E450FF500DDC590 /* XCRemoteSwiftPackageReference "TwitchIRC" */;
 			productName = TwitchIRC;
 		};
 /* End XCSwiftPackageProductDependency section */

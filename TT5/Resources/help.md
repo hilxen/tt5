@@ -19,8 +19,16 @@ The app can be put into the background, so you can run other streaming apps like
 - Languages and voices - all supported by Apple's Text to Speech
 - Automatic language recognition
 - Customize speech at app level or for individual nicks - Voice, Volume, Rate, Pitch
-- Mute/unmute nicks by role or individually
+- Mute/unmute nicks by role or individually, or for highlighed text, or custom rewards
 - Customize nick's pronunciation
+- Announce custom rewards
+
+**New in version 1.4**
+- announce custom rewards with alert sound
+- custom reward MUST have text
+- Twitch does not provide custom reward names to anonymous users, so you have to set it yourself:
+  > tap on custom reward message to set name and alert sound
+  > configure custom reward name and alert sound in settings
 
 **New in version 1.3**
 - announce speech volume changes

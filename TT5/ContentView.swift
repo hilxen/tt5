@@ -8,8 +8,6 @@
 import SwiftUI
 import SwiftData
 import TwitchIRC
-import PopupView
-import SwipeActions
 import Combine
 import NaturalLanguage
 import AVFoundation
@@ -21,6 +19,7 @@ import CoreFoundation
 class Model: ObservableObject {
     @Published var list = [Item]()
     @Published var newNicks = [String: Nick]()
+    @Published var newCustomRewards = [String: CustomReward]()
     @Published var shouldRefresh = CurrentValueSubject<Bool, Never>(false)
     @Published var shouldMute = CurrentValueSubject<Bool, Never>(false)
     @Published var shouldHeartbeat = CurrentValueSubject<Bool, Never>(false)
@@ -34,9 +33,11 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
     @Environment(\.modelContext) private var modelContext
     @Query private var settings: [Settings]
     @Query private var nicks: [Nick]
+    @Query private var customRewards: [CustomReward]
     @Query(filter: #Predicate<Language> { $0.enabled }) private var enabledLanguages: [Language]
     @Query private var bannedWords: [BannedWord]
 
+    @State private var path = NavigationPath()
     @State private var showSettings = false
     @State private var showHelp = false
     @State private var firstLaunch = false
@@ -55,6 +56,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
     let itemHighlightColor = Color(red: 231/255, green: 211/255, blue: 253/255)
     let itemAttentionColor = Color(red: 255/255, green: 200/255, blue: 200/255)
     let itemSelectedColor = Color(red: 255/255, green: 255/255, blue: 117/255)
+    let itemRewardColor = Color(red: 144/255, green: 238/255, blue: 144/255)
     let log = Log()
 
     init() {
@@ -79,7 +81,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
         
     func initSettings() {
         if settings.isEmpty {
-            modelContext.insert(Settings(channel: "", volume: 1, muted: false, rate: .normal, pitch: .normal, voice: .female, mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true, bannedWordsEnabled: false))
+            modelContext.insert(Settings(channel: "", volume: 1, muted: false, rate: .normal, pitch: .normal, voice: .female, mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true, customRewards: true, bannedWordsEnabled: false))
             try! modelContext.save()
         }
     }
@@ -149,8 +151,9 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
             nick.subscriber = pm.isSubscriber
             nick.mod = pm.isMod
             nick.broadcaster = pm.isBroadcaster
+            let customReward = pm.customRewardId.isEmpty ? nil : getCustomReward(id: pm.customRewardId)
             print("addItem model.list.count=\(model.list.count)")
-            let item = Item(id: pm.id, nick: nick, message: pm.message, messageId: pm.messageId, emotes: pm.emotes)
+            let item = Item(id: pm.id, nick: nick, message: pm.message, messageId: pm.messageId, emotes: pm.emotes, customReward: customReward)
             model.list.append(item)
             if model.list.count > maxMessages {
                 model.list.removeFirst()
@@ -226,6 +229,18 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
         }
     }
     
+    func getCustomReward(id: String) -> CustomReward {
+        print("get CustomReward \(id)")
+        let _settings = settings.first!
+        if let customReward = customRewards.first(where: {$0.id == id}) ?? model.newCustomRewards[id] {
+            return customReward
+        } else {
+            let customReward = CustomReward(id: id, name: "", sound: .Fanfare)
+            model.newCustomRewards[id] = CustomReward(id: id, name: "", sound: .Fanfare)
+            return customReward
+        }
+    }
+    
     func saveNewNicks() {
         for nick in model.newNicks.values {
             modelContext.insert(nick)
@@ -233,7 +248,15 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
         }
         model.newNicks.removeAll()
     }
-    
+
+    func saveNewCustomRewards() {
+        for customReward in model.newCustomRewards.values {
+            modelContext.insert(customReward)
+            self.print("Saved new CustomReward", customReward.id)
+        }
+        model.newCustomRewards.removeAll()
+    }
+
     func itemActive(_ item: Item) -> Bool {
        return model.speakerActive && item == model.speakerItem
     }
@@ -263,7 +286,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
     
         
     var body: some View {
-        NavigationStack() {
+        NavigationStack(path: $path) {
             if firstLaunch {
                 FirstLaunchHelpView(firstLaunch: $firstLaunch)
             } else if forceShowSettings {
@@ -294,7 +317,26 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                                                 .bold()
                                                 .padding(.leading, 2)
                                         }
-                                        Text(item.message).multilineTextAlignment(.leading)
+                                        if item.customReward == nil {
+                                            Text(item.message).multilineTextAlignment(.leading)
+                                        } else {
+                                            HStack {
+                                                Image("reward")
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(height: scale * 2)
+                                                if item.customReward!.name.isEmpty {
+                                                    Text(item.message).multilineTextAlignment(.leading).bold()
+                                                } else {
+                                                    VStack (alignment: .leading) {
+                                                        Text(item.customReward!.name).multilineTextAlignment(.leading).bold()
+                                                        Text(item.message).multilineTextAlignment(.leading)
+                                                    }
+                                                }
+                                            }.onTapGesture() {
+                                                self.path.append(item.customReward!)
+                                            }
+                                        }
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .font(.system(size: scale))
@@ -305,9 +347,11 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                                         UIPasteboard.general.setValue(item.message, forPasteboardType: "public.plain-text")
                                     }
                                     .background(itemActive(item)
-                                                ? itemHighlightColor: (item.containsBannedWords
-                                                                       ? itemAttentionColor : (item.highlighted
-                                                                                               ? itemSelectedColor: Color.clear)))
+                                                ? itemHighlightColor: item.containsBannedWords
+                                                ? itemAttentionColor : item.highlighted
+                                                ? itemSelectedColor: item.customReward != nil
+                                                ? itemRewardColor: Color.clear
+                                    )
                                 }
                                 .accentColor(Color.black)
                             }
@@ -388,6 +432,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                         model.speakerActive = false
                     }
                     saveNewNicks()
+                    saveNewCustomRewards()
                     checkHeartbeat()
                 }
                 .navigationDestination(isPresented: $showSettings) {
@@ -395,6 +440,9 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                 }
                 .navigationDestination(isPresented: $showHelp) {
                     HelpView()
+                }
+                .navigationDestination(for: CustomReward.self) { customReward in
+                    CustomRewardView(customReward: customReward)
                 }
             }
         }

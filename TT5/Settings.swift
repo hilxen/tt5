@@ -23,6 +23,38 @@ enum Volume: Int, CaseIterable {
     }
 }
 
+
+enum Sound: Int, CaseIterable {
+    case No_Sound = 0
+    case Received_Mail = 1001
+    case Voicemail = 1002
+    case Received_Message = 1003
+    case Sent_Message = 1004
+    case Alarm = 1005
+    case Anticipate = 1020
+    case Bloom = 1021
+    case Calypso = 1022
+    case Choo_Choo = 1023
+    case Descent = 1024
+    case Fanfare = 1025
+    case Ladder = 1026
+    case Minuet = 1027
+    case News_Flash = 1028
+    case Noir = 1029
+    case Sherwood_Forest = 1030
+    case Spell = 1031
+    case Suspense = 1032
+    case Telegraph = 1033
+    case Tiptoes = 1034
+    case Typewriters = 1035
+    case Update = 1036
+    
+    func description() -> String {
+        return String(describing: self).replacingOccurrences(of: "_", with: " ")
+    }
+}
+
+
 enum Rate: Float, CaseIterable {
     case min = 0.2
     case normal = 0.5
@@ -93,6 +125,7 @@ final class Settings: Codable {
         case subscribers
         case broadcaster
         case highlighted
+        case customRewards
         case version
         case bannedWordsEnabled
     }
@@ -110,6 +143,7 @@ final class Settings: Codable {
         subscribers = try container.decode(Bool.self, forKey: .subscribers)
         broadcaster = try container.decode(Bool.self, forKey: .broadcaster)
         highlighted = try container.decode(Bool.self, forKey: .highlighted)
+        customRewards = try container.decodeIfPresent(Bool.self, forKey: .customRewards) ?? true
         version = try container.decodeIfPresent(String.self, forKey: .version)
         bannedWordsEnabled = try container.decodeIfPresent(Bool.self, forKey: .bannedWordsEnabled)
     }
@@ -127,6 +161,7 @@ final class Settings: Codable {
         try container.encode(subscribers, forKey: .subscribers)
         try container.encode(broadcaster, forKey: .broadcaster)
         try container.encode(highlighted, forKey: .highlighted)
+        try container.encodeIfPresent(customRewards, forKey: .customRewards)
         try container.encodeIfPresent(version, forKey: .version)
         try container.encodeIfPresent(bannedWordsEnabled, forKey: .bannedWordsEnabled)
     }
@@ -142,11 +177,12 @@ final class Settings: Codable {
     var subscribers: Bool
     var broadcaster: Bool
     var highlighted: Bool
+    var customRewards: Bool?
     var version: String?
     var bannedWordsEnabled: Bool?
     
     init(channel: String, volume: Int, muted: Bool, rate: Rate, pitch: Pitch, voice: Voice,
-         mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool, bannedWordsEnabled: Bool) {
+         mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool, customRewards: Bool, bannedWordsEnabled: Bool) {
         self.channel = channel
         self.volume = volume
         self.muted = muted
@@ -158,6 +194,7 @@ final class Settings: Codable {
         self.subscribers = subscribers
         self.broadcaster = broadcaster
         self.highlighted = highlighted
+        self.customRewards = customRewards
         self.bannedWordsEnabled = bannedWordsEnabled
     }
     
@@ -173,6 +210,7 @@ final class Settings: Codable {
         self.subscribers = copy.subscribers
         self.broadcaster = copy.broadcaster
         self.highlighted = copy.highlighted
+        self.customRewards = copy.customRewards
         self.bannedWordsEnabled = copy.bannedWordsEnabled
     }
     
@@ -188,6 +226,7 @@ final class Settings: Codable {
         self.subscribers = copy.subscribers
         self.broadcaster = copy.broadcaster
         self.highlighted = copy.highlighted
+        self.customRewards = copy.customRewards
         self.bannedWordsEnabled = copy.bannedWordsEnabled
     }
 }
@@ -516,5 +555,44 @@ final class Log {
                 try! modelContext.save()
             }
         }
+    }
+}
+
+
+@Model
+final class CustomReward: Identifiable, Codable {
+    enum CodingKeys: CodingKey {
+        case id
+        case name
+        case sound
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        sound = try container.decode(Int.self, forKey: .sound)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(sound, forKey: .sound)
+    }
+
+    var id: String
+    var name: String
+    var sound: Int
+    
+    init(id: String, name: String, sound: Sound) {
+        self.id = id
+        self.name = name
+        self.sound = sound.rawValue
+    }
+    
+    func set(name: String, sound: Sound) {
+        self.name = name
+        self.sound = sound.rawValue
     }
 }

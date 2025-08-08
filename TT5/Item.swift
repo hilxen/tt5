@@ -27,6 +27,7 @@ final class Item : Equatable {
     var messageId: String
     var emotesStr: String
     var emotes: [Emote]
+    var customReward: CustomReward?
     var skipped: Bool = false
     var containsBannedWords: Bool = false
     var highlighted: Bool = false
@@ -35,13 +36,14 @@ final class Item : Equatable {
         return lhs.id == rhs.id
     }
     
-    init(id: String, nick: Nick, message: String, messageId: String, emotes: String) {
+    init(id: String, nick: Nick, message: String, messageId: String, emotes: String, customReward: CustomReward?) {
         self.id = id
         self.nick = nick
         self.message = message
         self.messageId = messageId
         self.emotesStr = emotes
         self.emotes = Item.parseEmotes(emotesStr: emotes)
+        self.customReward = customReward
     }
     
     static func parseEmotes(emotesStr: String) -> [Emote] {

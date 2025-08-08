@@ -29,6 +29,7 @@ struct SettingsView: View {
     @State private var subscribers: Bool = true
     @State private var broadcaster: Bool = true
     @State private var highlighted: Bool = true
+    @State private var customRewards: Bool = true
     @State var rateValue: Float = Rate.normal.rawValue
     @State var pitch: Pitch = .normal
     @State var voice: Voice = .female
@@ -137,6 +138,12 @@ struct SettingsView: View {
                         Spacer()
                         Toggle("", isOn: $highlighted)
                     }.padding(.bottom, 5)
+                    HStack {
+                        Image("reward").resizable().scaledToFit().frame(height: 20)
+                        Text("Custom rewards")
+                        Spacer()
+                        Toggle("", isOn: $customRewards)
+                    }.padding(.bottom, 5)
                 }.padding(.leading, 25)
                 HStack {
                     Image(systemName: "gearshape.fill")
@@ -180,6 +187,12 @@ struct SettingsView: View {
                     }
                 }.padding(.vertical, 5)
                 HStack {
+                    NavigationLink(destination: CustomRewardListView()) {
+                        Image(systemName: "gift")
+                        Text("Custom Rewards").padding(.leading, 20)
+                    }
+                }.padding(.vertical, 5)
+                HStack {
                     NavigationLink(destination: ProfilesView()) {
                         Image(systemName: "folder.badge.gearshape")
                         Text("Profiles").padding(.leading, 15)
@@ -210,6 +223,7 @@ struct SettingsView: View {
             subscribers = settings.first!.subscribers
             broadcaster = settings.first!.broadcaster
             highlighted = settings.first!.highlighted
+            customRewards = settings.first!.customRewards ?? true
             initLanguages()
         }.onDisappear {
             save()
@@ -238,6 +252,7 @@ struct SettingsView: View {
         self.settings.first!.subscribers = subscribers
         self.settings.first!.broadcaster = broadcaster
         self.settings.first!.highlighted = highlighted
+        self.settings.first!.customRewards = customRewards
         let normalizedChannel = normalizeChannelName(channel)
         if !normalizedChannel.isEmpty && !channels.contains(where: {$0.name == normalizedChannel}) {
             modelContext.insert(Channel(name: normalizedChannel))

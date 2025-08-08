@@ -204,7 +204,8 @@ final class AudioManager: NSObject {
                 || (nick.subscriber! && settings.subscribers)
                 || (nick.mod! && settings.mods)
                 || (nick.broadcaster! && settings.broadcaster)
-                || (item.messageId == "highlighted-message" && settings.highlighted) {
+                || (item.messageId == "highlighted-message" && settings.highlighted)
+                || (item.customReward != nil && settings.customRewards ?? true){
                 log?.print("nick unmuted by role", nick.name)
             } else {
                 log?.print("nick muted by default", nick.name)
@@ -241,7 +242,12 @@ final class AudioManager: NSObject {
         let ssmlRate = Rate.ssml(rawValue: nick.rate!)
         let ssmlPitch = Pitch.fromRawValue(rawValue: nick.pitch!).ssml()
         let ssmlVolume = ssmlVolumes[volumeIndex]
-        let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
+        var customRewardProsody = ""
+        if item.customReward != nil && !item.customReward!.name.isEmpty {
+            let customRewardName = item.customReward!.name.escapedForXML()
+            customRewardProsody = "<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(customRewardName)</prosody><break/>"
+        }
+        let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/>\(customRewardProsody)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
         log?.print(ssml)
 
         var voiceId: String
@@ -263,12 +269,35 @@ final class AudioManager: NSObject {
         }
     }
     
+    class AudioCallbackContext {
+        let audioManager: AudioManager
+        let utterance: AVSpeechUtterance
+        
+        init(audioManager: AudioManager, utterance: AVSpeechUtterance) {
+            self.audioManager = audioManager
+            self.utterance = utterance
+        }
+    }
+    
     func speak(item: Item, voiceId: String, ssml: String) {
         activateSession()
         let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
         utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId)
         utterances[utterance] = item
-        speechTools.synthesizer.speak(utterance)
+        if item.customReward != nil && item.customReward!.sound != Sound.No_Sound.rawValue {
+            let tmpSoundID: SystemSoundID = SystemSoundID(item.customReward!.sound)
+            let context = UnsafeMutableRawPointer(Unmanaged.passRetained(AudioCallbackContext(audioManager: self, utterance: utterance)).toOpaque())
+            let completionCallback: AudioServicesSystemSoundCompletionProc = { (inSystemSoundID, clientData) in
+                let context = Unmanaged<AudioCallbackContext>.fromOpaque(clientData!).takeRetainedValue()
+                context.audioManager.speechTools.synthesizer.speak(context.utterance)
+                AudioServicesRemoveSystemSoundCompletion(inSystemSoundID)
+            }
+            AudioServicesAddSystemSoundCompletion(tmpSoundID, nil, nil, completionCallback, context)
+            AudioServicesPlaySystemSound(tmpSoundID)
+        } else {
+            speechTools.synthesizer.speak(utterance)
+        }
+        
     }
     
     func announce(settings: Settings, text: String) {
