@@ -243,7 +243,8 @@ final class AudioManager: NSObject {
         let ssmlPitch = Pitch.fromRawValue(rawValue: nick.pitch!).ssml()
         let ssmlVolume = ssmlVolumes[volumeIndex]
         var customRewardProsody = ""
-        if item.customReward != nil && !item.customReward!.name.isEmpty {
+        let customReward = item.customReward
+        if customReward != nil && customReward!.announce && !customReward!.name.isEmpty {
             let customRewardName = item.customReward!.name.escapedForXML()
             customRewardProsody = "<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(customRewardName)</prosody><break/>"
         }

@@ -15,6 +15,7 @@ final class Profile: Codable {
         case channels
         case nicks
         case bannedWords
+        case customRewards
     }
     
     required init(from decoder: Decoder) throws {
@@ -24,6 +25,7 @@ final class Profile: Codable {
         channels = try container.decode([Channel].self, forKey: .channels)
         nicks = try container.decode([Nick].self, forKey: .nicks)
         bannedWords = try container.decode([BannedWord].self, forKey: .bannedWords)
+        customRewards = try container.decode([CustomReward].self, forKey: .customRewards)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -33,14 +35,16 @@ final class Profile: Codable {
         try container.encode(channels, forKey: .channels)
         try container.encode(nicks, forKey: .nicks)
         try container.encode(bannedWords, forKey: .bannedWords)
+        try container.encode(customRewards, forKey: .customRewards)
     }
     
-    init(settings: [Settings], languages: [Language], channels: [Channel], nicks: [Nick], bannedWords: [BannedWord]) {
+    init(settings: [Settings], languages: [Language], channels: [Channel], nicks: [Nick], bannedWords: [BannedWord], customRewards: [CustomReward]) {
         self.settings = settings
         self.languages = languages
         self.channels = channels
         self.nicks = nicks
         self.bannedWords = bannedWords
+        self.customRewards = customRewards
     }
     
     var settings: [Settings]
@@ -48,6 +52,7 @@ final class Profile: Codable {
     var channels: [Channel]
     var nicks: [Nick]
     var bannedWords: [BannedWord]
+    var customRewards: [CustomReward]
 }
 
 
@@ -64,6 +69,7 @@ struct ProfilesView: View {
     @Query private var channels: [Channel]
     @Query private var nicks: [Nick]
     @Query private var bannedWords: [BannedWord]
+    @Query private var customRewards: [CustomReward]
     
     @State private var name: String = "default"
     @State private var multiSelection = Set<String>()
@@ -81,8 +87,8 @@ struct ProfilesView: View {
         let DocumentDirURL = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
         let fileURL = DocumentDirURL.appendingPathComponent(name).appendingPathExtension("json")
         let jsonEncoder = JSONEncoder()
-        let profile = Profile(settings: settings, languages: languages, channels: channels, nicks: nicks, bannedWords: bannedWords)
-        let json =  String(data: try! jsonEncoder.encode(profile), encoding: String.Encoding.utf8)!
+        let profile = Profile(settings: settings, languages: languages, channels: channels, nicks: nicks, bannedWords: bannedWords, customRewards: customRewards)
+        let json = String(data: try! jsonEncoder.encode(profile), encoding: String.Encoding.utf8)!
         try! json.write(to: fileURL, atomically: true, encoding: .utf8)
         reloadProfiles()
     }
@@ -113,6 +119,11 @@ struct ProfilesView: View {
             modelContext.insert(bannedWord)
         }
 
+        try! modelContext.delete(model: CustomReward.self)
+        for customReward in profile.customRewards {
+            modelContext.insert(customReward)
+        }
+        
         try! modelContext.save()
     }
     

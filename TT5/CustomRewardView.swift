@@ -16,6 +16,7 @@ struct CustomRewardView: View {
     @Query private var customRewards: [CustomReward]
     @State var customReward: CustomReward
     @State var name: String = ""
+    @State var announce: Bool = true
     @State var sound: Sound = Sound.Fanfare
 
     var body: some View {
@@ -28,6 +29,10 @@ struct CustomRewardView: View {
                     .padding(5)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.black)
+                Toggle("", isOn: $announce)
+                    .padding(.leading, 20)
+                    .padding(.trailing, 30)
+                    .frame(width: 50, height: 25)
             }.padding(.vertical, 5)
             HStack {
                 Text("Sound").padding(.horizontal, 5)
@@ -49,6 +54,7 @@ struct CustomRewardView: View {
 
         }.onAppear {
             self.name = customReward.name
+            self.announce = customReward.announce
             self.sound = Sound.allCases.first(where: {$0.rawValue == customReward.sound}) ?? .Fanfare
         }.onDisappear {
             save()
@@ -59,9 +65,9 @@ struct CustomRewardView: View {
     
     func save() {
         if let _customReward = customRewards.first(where: {$0.id == customReward.id}) {
-            _customReward.set(name: name, sound: sound);
+            _customReward.set(name: name, announce: announce, sound: sound);
         } else {
-            customReward.set(name: name, sound: sound);
+            customReward.set(name: name, announce: announce, sound: sound);
             modelContext.insert(customReward)
         }
         try! modelContext.save()

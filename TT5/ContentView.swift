@@ -235,8 +235,8 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
         if let customReward = customRewards.first(where: {$0.id == id}) ?? model.newCustomRewards[id] {
             return customReward
         } else {
-            let customReward = CustomReward(id: id, name: "", sound: .Fanfare)
-            model.newCustomRewards[id] = CustomReward(id: id, name: "", sound: .Fanfare)
+            let customReward = CustomReward(id: id, name: "", announce: true, sound: .Fanfare)
+            model.newCustomRewards[id] = CustomReward(id: id, name: "", announce: true, sound: .Fanfare)
             return customReward
         }
     }

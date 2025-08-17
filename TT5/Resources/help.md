@@ -19,7 +19,7 @@ The app can be put into the background, so you can run other streaming apps like
 - Languages and voices - all supported by Apple's Text to Speech
 - Automatic language recognition
 - Customize speech at app level or for individual nicks - Voice, Volume, Rate, Pitch
-- Mute/unmute nicks by role or individually, or for highlighed text, or custom rewards
+- Mute/unmute nicks by role or individually, or for highlighted text, or custom rewards
 - Customize nick's pronunciation
 - Announce custom rewards
 

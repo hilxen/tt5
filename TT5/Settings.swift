@@ -564,6 +564,7 @@ final class CustomReward: Identifiable, Codable {
     enum CodingKeys: CodingKey {
         case id
         case name
+        case announce
         case sound
     }
     
@@ -571,6 +572,7 @@ final class CustomReward: Identifiable, Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
         name = try container.decode(String.self, forKey: .name)
+        announce = try container.decode(Bool.self, forKey: .announce)
         sound = try container.decode(Int.self, forKey: .sound)
     }
 
@@ -578,21 +580,25 @@ final class CustomReward: Identifiable, Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(name, forKey: .name)
+        try container.encode(announce, forKey: .announce)
         try container.encode(sound, forKey: .sound)
     }
 
     var id: String
     var name: String
+    var announce: Bool = true
     var sound: Int
     
-    init(id: String, name: String, sound: Sound) {
+    init(id: String, name: String, announce: Bool, sound: Sound) {
         self.id = id
         self.name = name
+        self.announce = announce
         self.sound = sound.rawValue
     }
     
-    func set(name: String, sound: Sound) {
+    func set(name: String, announce: Bool, sound: Sound) {
         self.name = name
+        self.announce = announce
         self.sound = sound.rawValue
     }
 }
