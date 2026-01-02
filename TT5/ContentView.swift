@@ -31,6 +31,7 @@ class Model: ObservableObject {
 
 struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerDelegate {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) var colorScheme
     @Query private var settings: [Settings]
     @Query private var nicks: [Nick]
     @Query private var customRewards: [CustomReward]
@@ -46,6 +47,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
     @State private var vibrate: Bool = false
     @State private var previousChannel: String = ""
     @State private var isVideoMuted: Bool = false
+    @State private var isVideoCollapsed: Bool = false
     @StateObject private var volumeObserver = VolumeObserver()
     
     @ObservedObject private var model = Model()
@@ -53,10 +55,10 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
     let audioManager: AudioManager = AudioManager.shared
     let maxMessages: Int = 20
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    let itemHighlightColor = Color(red: 231/255, green: 211/255, blue: 253/255)
-    let itemAttentionColor = Color(red: 255/255, green: 200/255, blue: 200/255)
-    let itemSelectedColor = Color(red: 255/255, green: 255/255, blue: 117/255)
-    let itemRewardColor = Color(red: 144/255, green: 238/255, blue: 144/255)
+    let itemHighlightColor = Color("itemHighlightColor")
+    let itemAttentionColor = Color("itemAttentionColor")
+    let itemSelectedColor = Color("itemSelectedColor")
+    let itemRewardColor = Color("itemRewardColor")
     let log = Log()
 
     init() {
@@ -295,7 +297,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                 let copyOfSettings = settings.first
                 if copyOfSettings != nil && !copyOfSettings!.channel.isEmpty {
                     TwitchPlayerWebView(shouldRefresh: model.shouldRefresh, shouldMute: model.shouldMute, shouldHeartbeat: model.shouldHeartbeat, delegate: self)
-                        .frame(height: 200)
+                        .frame(height: isVideoCollapsed ? 50 : 200)
                         .padding([.all], 5)
                 }
                 ScrollViewReader { scrollView in
@@ -353,7 +355,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                                                 ? itemRewardColor: Color.clear
                                     )
                                 }
-                                .accentColor(Color.black)
+                                .accentColor(Color.primary)
                             }
                         }
                     }
@@ -400,6 +402,11 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                             Image(systemName: "textformat.size.smaller")
                         }
                         Spacer()
+                        Button {
+                            isVideoCollapsed = !isVideoCollapsed
+                        } label: {
+                            Image(systemName: isVideoCollapsed ? "arrowtriangle.down.circle": "arrowtriangle.up.circle").resizable().scaledToFit().frame(height: 28).padding(.trailing, 8)
+                        }
                         Button {
                             model.shouldMute.send(true)
                         } label: {

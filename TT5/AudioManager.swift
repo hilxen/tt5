@@ -45,6 +45,38 @@ protocol AudioManagerDelegate {
     func speechFinished(item: Item)
 }
 
+extension Character {
+    /// Checks if a character is rendered as an emoji.
+    var isEmoji: Bool {
+        // Standard emoji presentation scalars (like 😀)
+        let hasEmojiPresentation = unicodeScalars.contains { $0.properties.isEmojiPresentation }
+        // Complex emojis (like 👨‍👩‍👧‍👦) often contain multiple scalars
+        let isCombinedEmoji = unicodeScalars.count > 1 && unicodeScalars.contains { $0.properties.isEmoji }
+        
+        return hasEmojiPresentation || isCombinedEmoji
+    }
+}
+
+func limitRepeatedEmojis(in input: String, maxCount: Int = 2) -> String {
+    var emojiCounts = [Character: Int]()
+    
+    let result = input.filter { char in
+        // Only apply the limit if the character is an emoji
+        if char.isEmoji {
+            let currentCount = emojiCounts[char, default: 0]
+            if currentCount < maxCount {
+                emojiCounts[char] = currentCount + 1
+                return true
+            } else {
+                return false // Filter out if over limit
+            }
+        }
+        
+        // If not an emoji (e.g., a letter or "!"), always keep it
+        return true
+    }
+    return String(result)
+}
 
 final class AudioManager: NSObject {
     static let shared = AudioManager()
@@ -177,10 +209,11 @@ final class AudioManager: NSObject {
     
     func cleanText(nicks: [Nick], item: Item) -> String {
         let mappedText1 = removeExcessiveEmotes(item: item)
-        let mappedText2 = replaceAtWords(text: mappedText1, nicks: nicks)
+        let mappedText2 = limitRepeatedEmojis(in: mappedText1)
+        let mappedText3 = replaceAtWords(text: mappedText2, nicks: nicks)
         let charactersToReplace = CharacterSet(charactersIn: "[]{}/|\\~^&;")
         let cleanedText = removeExtraRepetitions(
-            replaceListedCharactersWithSpaces(mappedText2, charactersToReplace: charactersToReplace))
+            replaceListedCharactersWithSpaces(mappedText3, charactersToReplace: charactersToReplace))
         return cleanedText
     }
 

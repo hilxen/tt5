@@ -23,6 +23,11 @@ The app can be put into the background, so you can run other streaming apps like
 - Customize nick's pronunciation
 - Announce custom rewards
 
+**New in version 1.5**
+- dark mode support
+- collapse/expand stream preview button
+- do not speak excessive emojis, max two
+
 **New in version 1.4**
 - announce custom rewards with alert sound
 - custom reward MUST have text

@@ -99,7 +99,7 @@ struct TestBannedWordsView: View {
                     .disableAutocorrection(true)
                     .padding(5)
                     .background(Color.gray.opacity(0.1))
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                 Button("Test") {
                     speak(textForTesting)
                 }.buttonStyle(.borderedProminent)
@@ -156,7 +156,7 @@ struct BannedWordsView: View {
     @State private var search: String = ""
     @State private var enabled: Bool = true
 
-    let highlightColor = Color(red: 231/255, green: 211/255, blue: 253/255)
+    let highlightColor = Color("itemHighlightColor")
     
     var body: some View {
         VStack(

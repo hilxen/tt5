@@ -330,7 +330,7 @@ final class Nick: Identifiable, Codable {
 
         let length = hexSanitized.count
 
-        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return Color.black }
+        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return Color.primary }
 
         if length == 6 {
             r = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
@@ -344,7 +344,7 @@ final class Nick: Identifiable, Codable {
             a = CGFloat(rgb & 0x000000FF) / 255.0
 
         } else {
-            return Color.black
+            return Color.primary
         }
 
         return Color(red: r, green: g, blue: b, opacity: a)

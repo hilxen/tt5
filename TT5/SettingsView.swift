@@ -52,7 +52,7 @@ struct SettingsView: View {
                     .disableAutocorrection(true)
                     .padding(5)
                     .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                     .border(channel.isEmpty ? Color.red : Color.gray, width: 1)
                 NavigationLink(destination: ChannelsListView()) {
                     Image(systemName: "folder")
