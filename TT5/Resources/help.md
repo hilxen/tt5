@@ -28,7 +28,7 @@ The app can be put into the background, so you can run other streaming apps like
 - mute conversations option in settings
 - collapse/expand stream preview button
 - do not speak excessive emojis, max two
-- no not speak URLs
+- do not speak URLs
 
 **New in version 1.4**
 - announce custom rewards with alert sound
