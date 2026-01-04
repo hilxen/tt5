@@ -28,30 +28,14 @@ func genderToSting(_ gender: AVSpeechSynthesisVoiceGender) -> String {
 
 
 struct VoiceIdsView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var settings: [Settings]
     let language: Language
     let synthesizer = AVSpeechSynthesizer()
-    static let shared = AudioManager()
-    var session = AVAudioSession.sharedInstance()
     @State var sampleText: String = "Testing the voice"
     
-    private func activateSession() {
-        try? session.setCategory(
-            .playback,
-            mode: .default,
-            options: [.duckOthers]
-        )
-        try? session.setActive(true, options: .notifyOthersOnDeactivation)
-        try? session.overrideOutputAudioPort(.speaker)
-    }
-
-    
     func playSample(voiceId: VoiceId) {
-        activateSession()
-        print(playSample, voiceId)
-        let voice = AVSpeechSynthesisVoice(identifier: voiceId.id)
-        let utterance = AVSpeechUtterance(string: sampleText)
-        utterance.voice = voice
-        synthesizer.speak(utterance)
+        AudioManager.shared.announce(settings: settings.first!, text: sampleText, voiceId: voiceId.id)
     }
     
     var body: some View {
@@ -63,16 +47,16 @@ struct VoiceIdsView: View {
                 TextField("Sample text", text: $sampleText)
                     .padding(5)
                     .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                     .padding(.horizontal, 10)
             }.padding(.vertical, 10)
                 .padding(.leading, 15)
                 .padding(.trailing, 5)
             List(language.voiceIds) { voiceId in
                 HStack {
-                    Image(voiceId.gender == "female"
-                          ? "figure.stand.dress" : voiceId.gender == "male"
-                          ? "figure.stand" : "figure.dress.line.vertical.figure"
+                    Text(voiceId.gender == "female"
+                          ? "F" : voiceId.gender == "male"
+                          ? "M" : "X"
                     )
                     Text(voiceName(voiceId.id))
                     Image(systemName: "play.circle")
@@ -100,9 +84,9 @@ struct VoiceIdsView: View {
                             }
                         }
                     } label: {
-                        Image(language.femaleVoiceId == voiceId.id
-                              ? "figure.stand.dress" : language.maleVoiceId == voiceId.id
-                              ? "figure.stand" : "viewfinder")
+                        Text(language.femaleVoiceId == voiceId.id
+                              ? "✅F" : language.maleVoiceId == voiceId.id
+                              ? "✅M" : "")
                     }
                 }
             }
@@ -143,11 +127,11 @@ struct LanguagesView: View {
                     NavigationLink(destination: VoiceIdsView(language: language)) {
                         HStack{
                             if language.femaleVoiceId != nil {
-                                Image("figure.stand.dress")
+                                Text("F")
                                 Text(voiceName(language.femaleVoiceId!))
                             }
                             if language.maleVoiceId != nil {
-                                Image("figure.stand")
+                                Text("M")
                                 Text(voiceName(language.maleVoiceId!))
                             }
                         }

@@ -176,7 +176,7 @@ struct ProfilesView: View {
                     .disableAutocorrection(true)
                     .padding(5)
                     .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                     .border(name.isEmpty ? Color.red : Color.gray, width: 1)
                 Button("Save") {
                     withAnimation(.linear(duration: 1)) {

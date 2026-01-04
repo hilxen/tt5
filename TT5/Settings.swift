@@ -128,6 +128,7 @@ final class Settings: Codable {
         case customRewards
         case version
         case bannedWordsEnabled
+        case muteConversations
     }
     
     required init(from decoder: Decoder) throws {
@@ -146,6 +147,7 @@ final class Settings: Codable {
         customRewards = try container.decodeIfPresent(Bool.self, forKey: .customRewards) ?? true
         version = try container.decodeIfPresent(String.self, forKey: .version)
         bannedWordsEnabled = try container.decodeIfPresent(Bool.self, forKey: .bannedWordsEnabled)
+        muteConversations = try container.decodeIfPresent(Bool.self, forKey: .muteConversations) ?? false
     }
 
     func encode(to encoder: Encoder) throws {
@@ -164,6 +166,7 @@ final class Settings: Codable {
         try container.encodeIfPresent(customRewards, forKey: .customRewards)
         try container.encodeIfPresent(version, forKey: .version)
         try container.encodeIfPresent(bannedWordsEnabled, forKey: .bannedWordsEnabled)
+        try container.encodeIfPresent(muteConversations, forKey: .muteConversations)
     }
     
     var channel: String
@@ -180,9 +183,10 @@ final class Settings: Codable {
     var customRewards: Bool?
     var version: String?
     var bannedWordsEnabled: Bool?
+    var muteConversations: Bool?
     
     init(channel: String, volume: Int, muted: Bool, rate: Rate, pitch: Pitch, voice: Voice,
-         mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool, customRewards: Bool, bannedWordsEnabled: Bool) {
+         mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool, customRewards: Bool, bannedWordsEnabled: Bool, muteConversations: Bool) {
         self.channel = channel
         self.volume = volume
         self.muted = muted
@@ -196,6 +200,7 @@ final class Settings: Codable {
         self.highlighted = highlighted
         self.customRewards = customRewards
         self.bannedWordsEnabled = bannedWordsEnabled
+        self.muteConversations = muteConversations
     }
     
     init(_ copy: Settings) {
@@ -212,6 +217,7 @@ final class Settings: Codable {
         self.highlighted = copy.highlighted
         self.customRewards = copy.customRewards
         self.bannedWordsEnabled = copy.bannedWordsEnabled
+        self.muteConversations = copy.muteConversations
     }
     
     func set(_ copy: Settings) {
@@ -228,6 +234,7 @@ final class Settings: Codable {
         self.highlighted = copy.highlighted
         self.customRewards = copy.customRewards
         self.bannedWordsEnabled = copy.bannedWordsEnabled
+        self.muteConversations = copy.muteConversations
     }
 }
 

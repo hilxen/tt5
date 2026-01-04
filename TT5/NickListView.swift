@@ -82,7 +82,7 @@ struct NickListView: View {
                 TextField("Search", text: $search)
                     .padding(5)
                     .background(Color.gray.opacity(0.1))
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                     .padding(.trailing, 20)
             }.padding(.vertical, 5).padding(.leading, 20)
             FoundNicks(search: search)

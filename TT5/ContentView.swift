@@ -83,7 +83,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
         
     func initSettings() {
         if settings.isEmpty {
-            modelContext.insert(Settings(channel: "", volume: 1, muted: false, rate: .normal, pitch: .normal, voice: .female, mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true, customRewards: true, bannedWordsEnabled: false))
+            modelContext.insert(Settings(channel: "", volume: 1, muted: false, rate: .normal, pitch: .normal, voice: .female, mods: true, vips: true, subscribers: true, broadcaster: true, highlighted: true, customRewards: true, bannedWordsEnabled: false, muteConversations: false))
             try! modelContext.save()
         }
     }
@@ -154,8 +154,9 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
             nick.mod = pm.isMod
             nick.broadcaster = pm.isBroadcaster
             let customReward = pm.customRewardId.isEmpty ? nil : getCustomReward(id: pm.customRewardId)
+            let conversation = !pm.replyParent.message.isEmpty || pm.message.hasPrefix("@")
             print("addItem model.list.count=\(model.list.count)")
-            let item = Item(id: pm.id, nick: nick, message: pm.message, messageId: pm.messageId, emotes: pm.emotes, customReward: customReward)
+            let item = Item(id: pm.id, nick: nick, message: pm.message, messageId: pm.messageId, emotes: pm.emotes, conversation: conversation, customReward: customReward)
             model.list.append(item)
             if model.list.count > maxMessages {
                 model.list.removeFirst()

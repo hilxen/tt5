@@ -54,7 +54,7 @@ struct NickView: View {
                 TextField("Pronunciation", text: $pronunciation)
                     .padding(5)
                     .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                     .padding(.horizontal, 20)
             }.padding(.vertical, 5)
             HStack {

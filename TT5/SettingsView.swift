@@ -30,6 +30,7 @@ struct SettingsView: View {
     @State private var broadcaster: Bool = true
     @State private var highlighted: Bool = true
     @State private var customRewards: Bool = true
+    @State private var muteConversations: Bool = false
     @State var rateValue: Float = Rate.normal.rawValue
     @State var pitch: Pitch = .normal
     @State var voice: Voice = .female
@@ -75,7 +76,7 @@ struct SettingsView: View {
                     }
                 }.padding(.vertical, 5)
                 HStack {
-                    Image(systemName: "speaker.wave.3.fill")
+                    Image(systemName: "speaker.wave.3.fill").padding(.trailing, 1)
                     Text("Speech Volume")
                     Spacer()
                     Image(systemName: "speaker.minus.fill").onTapGesture {
@@ -97,7 +98,13 @@ struct SettingsView: View {
                     }
                 }.padding(.vertical, 5)
                 HStack {
-                    Image(systemName: "speaker.slash.fill").padding(.leading, 2).padding(.trailing, 8)
+                    Image(systemName: "person.2.slash.fill").padding(.trailing, 4)
+                    Text("Mute conversations")
+                    Spacer()
+                    Toggle("", isOn: $muteConversations)
+                }.padding(.vertical, 5)
+                HStack {
+                    Image(systemName: "speaker.slash.fill").padding(.leading, 2).padding(.trailing, 10)
                     Text("All muted")
                     Spacer()
                     Toggle("", isOn: $muted)
@@ -224,6 +231,7 @@ struct SettingsView: View {
             broadcaster = settings.first!.broadcaster
             highlighted = settings.first!.highlighted
             customRewards = settings.first!.customRewards ?? true
+            muteConversations = settings.first!.muteConversations ?? false
             initLanguages()
         }.onDisappear {
             save()
@@ -253,6 +261,7 @@ struct SettingsView: View {
         self.settings.first!.broadcaster = broadcaster
         self.settings.first!.highlighted = highlighted
         self.settings.first!.customRewards = customRewards
+        self.settings.first!.muteConversations = muteConversations
         let normalizedChannel = normalizeChannelName(channel)
         if !normalizedChannel.isEmpty && !channels.contains(where: {$0.name == normalizedChannel}) {
             modelContext.insert(Channel(name: normalizedChannel))

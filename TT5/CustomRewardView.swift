@@ -28,7 +28,7 @@ struct CustomRewardView: View {
                 TextField("Name", text: $name)
                     .padding(5)
                     .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                 Toggle("", isOn: $announce)
                     .padding(.leading, 20)
                     .padding(.trailing, 30)

@@ -78,6 +78,15 @@ func limitRepeatedEmojis(in input: String, maxCount: Int = 2) -> String {
     return String(result)
 }
 
+func removeLinks(from text: String) -> String {
+    // Regex pattern for http/https links
+    let regex = /https?:\/\/\S+/
+    
+    // Replace all matches with an empty string
+    return text.replacing(regex, with: "")
+               .trimmingCharacters(in: .whitespacesAndNewlines)
+}
+
 final class AudioManager: NSObject {
     static let shared = AudioManager()
     let speechTools = SpeechTools()
@@ -208,12 +217,13 @@ final class AudioManager: NSObject {
     }
     
     func cleanText(nicks: [Nick], item: Item) -> String {
-        let mappedText1 = removeExcessiveEmotes(item: item)
-        let mappedText2 = limitRepeatedEmojis(in: mappedText1)
-        let mappedText3 = replaceAtWords(text: mappedText2, nicks: nicks)
+        var text = removeExcessiveEmotes(item: item)
+        text = limitRepeatedEmojis(in: text)
+        text = replaceAtWords(text: text, nicks: nicks)
+        text = removeLinks(from: text)
         let charactersToReplace = CharacterSet(charactersIn: "[]{}/|\\~^&;")
         let cleanedText = removeExtraRepetitions(
-            replaceListedCharactersWithSpaces(mappedText3, charactersToReplace: charactersToReplace))
+            replaceListedCharactersWithSpaces(text, charactersToReplace: charactersToReplace))
         return cleanedText
     }
 
@@ -245,6 +255,11 @@ final class AudioManager: NSObject {
                 item.skipped = true
                 return
             }
+        }
+        if (item.conversation && settings.muteConversations ?? false) {
+            log?.print("conversation skipped")
+            item.skipped = true
+            return
         }
         let cleanedText = cleanText(nicks: nicks, item: item)
         if (settings.bannedWordsEnabled ?? false) && SFSpeechRecognizer.authorizationStatus() == .authorized && !bannedWords.isEmpty {
@@ -334,7 +349,7 @@ final class AudioManager: NSObject {
         
     }
     
-    func announce(settings: Settings, text: String) {
+    func announce(settings: Settings, text: String, voiceId: String? = nil) {
         var volumeIndex = settings.volume
         if volumeIndex < 0 { volumeIndex = 0 }
         else if volumeIndex > volumes.endIndex { volumeIndex = volumes.endIndex }
@@ -345,9 +360,9 @@ final class AudioManager: NSObject {
         let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(text.escapedForXML())</prosody></speak>"
 
         activateSession()
-        let voiceId = speechTools.voices.values.first?[settings.voice] ?? "com.apple.voice.compact.en-US.Samantha"
+        let useVoiceId = voiceId ?? speechTools.voices.values.first?[settings.voice] ?? "com.apple.voice.compact.en-US.Samantha"
         let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
-        utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId)
+        utterance.voice = AVSpeechSynthesisVoice(identifier: useVoiceId)
         speechTools.synthesizer.speak(utterance)
     }
     

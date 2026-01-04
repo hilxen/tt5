@@ -31,18 +31,20 @@ final class Item : Equatable {
     var skipped: Bool = false
     var containsBannedWords: Bool = false
     var highlighted: Bool = false
+    var conversation: Bool = false
     
     static func ==(lhs: Item, rhs: Item) -> Bool {
         return lhs.id == rhs.id
     }
     
-    init(id: String, nick: Nick, message: String, messageId: String, emotes: String, customReward: CustomReward?) {
+    init(id: String, nick: Nick, message: String, messageId: String, emotes: String, conversation: Bool, customReward: CustomReward?) {
         self.id = id
         self.nick = nick
         self.message = message
         self.messageId = messageId
         self.emotesStr = emotes
         self.emotes = Item.parseEmotes(emotesStr: emotes)
+        self.conversation = conversation
         self.customReward = customReward
     }
     

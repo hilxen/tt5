@@ -134,7 +134,7 @@ struct TestBannedWordsView: View {
                         .disableAutocorrection(true)
                         .padding(5)
                         .background(Color.gray.opacity(0.1))
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                     Button("Add") {
                         modelContext.insert(BannedWord(notMatchedWords[index]))
                         try! modelContext.save()
@@ -224,7 +224,7 @@ struct BannedWordsView: View {
                     .disableAutocorrection(true)
                     .padding(5)
                     .background(Color.gray.opacity(0.1))
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                 Button("Add") {
                     if !search.isEmpty {
                         modelContext.insert(BannedWord(search))
