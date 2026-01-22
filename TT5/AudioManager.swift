@@ -261,6 +261,11 @@ final class AudioManager: NSObject {
             item.skipped = true
             return
         }
+        if (item.message.starts(with: "!")) {
+            log?.print("command skipped")
+            item.skipped = true
+            return
+        }
         let cleanedText = cleanText(nicks: nicks, item: item)
         if (settings.bannedWordsEnabled ?? false) && SFSpeechRecognizer.authorizationStatus() == .authorized && !bannedWords.isEmpty {
             bannedWordsManager.check(
