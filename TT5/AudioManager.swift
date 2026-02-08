@@ -94,6 +94,7 @@ final class AudioManager: NSObject {
     private var session = AVAudioSession.sharedInstance()
     private var volume: Int = 5
     private var log: Log?
+    private var lastSpeechEndTime: Date?
     
     let bannedWordsManager = BannedWordsManager()
     let volumes: [Float] = [0.01, 0.0151, 0.04, 0.08, 0.16, 0.32, 1, 4, 16, 32, 64]
@@ -301,7 +302,11 @@ final class AudioManager: NSObject {
             let customRewardName = item.customReward!.name.escapedForXML()
             customRewardProsody = "<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(customRewardName)</prosody><break/>"
         }
-        let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/>\(customRewardProsody)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
+        
+        let needsExtraPriming = isBluetoothRoute && (outputLatency > 0.7 || timeSinceLastSpeech > 10)
+        let primingBreak = needsExtraPriming ? "<break time='1.5s'/>" : "<break time='0.8s'/>"
+        
+        let ssml = "<speak>\(primingBreak)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/>\(customRewardProsody)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
         log?.print(ssml)
 
         var voiceId: String
@@ -362,7 +367,9 @@ final class AudioManager: NSObject {
         let ssmlRate = Rate.ssml(rawValue: settings.rate)
         let ssmlPitch = Pitch.fromRawValue(rawValue: settings.pitch).ssml()
         let ssmlVolume = ssmlVolumes[volumeIndex]
-        let ssml = "<speak><prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(text.escapedForXML())</prosody></speak>"
+        let needsExtraPriming = isBluetoothRoute && (outputLatency > 0.7 || timeSinceLastSpeech > 10)
+        let primingBreak = needsExtraPriming ? "<break time='1.5s'/>" : "<break time='0.8s'/>"
+        let ssml = "<speak>\(primingBreak)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(text.escapedForXML())</prosody></speak>"
 
         activateSession()
         let useVoiceId = voiceId ?? speechTools.voices.values.first?[settings.voice] ?? "com.apple.voice.compact.en-US.Samantha"
@@ -393,6 +400,25 @@ final class AudioManager: NSObject {
             log?.print("Failed to deactivate audio session: \(error.localizedDescription)")
         }
     }
+    
+    var isBluetoothRoute: Bool {
+        return session.currentRoute.outputs.contains { output in
+            let bluetoothPorts: Set<AVAudioSession.Port> = [
+                .bluetoothA2DP,     // High-quality playback (what you usually want for TTS/speech)
+                .bluetoothHFP,      // Voice calls / lower quality but duplex
+                .bluetoothLE        // LE Audio (iOS 13+, some newer devices)
+            ]
+            return bluetoothPorts.contains(output.portType)
+        }
+    }
+    
+    var outputLatency: TimeInterval {
+        AVAudioSession.sharedInstance().outputLatency
+    }
+
+    var timeSinceLastSpeech: TimeInterval {
+        lastSpeechEndTime.map { Date().timeIntervalSince($0) } ?? 999
+    }
 }
 
 extension AudioManager: AVSpeechSynthesizerDelegate {
@@ -404,6 +430,7 @@ extension AudioManager: AVSpeechSynthesizerDelegate {
     }
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        lastSpeechEndTime = Date()
         if let item = utterances.removeValue(forKey: utterance) {
             log?.print("stopped speaking", item.nick.name, "queue size", String(utterances.count))
             delegate?.speechFinished(item: item)
