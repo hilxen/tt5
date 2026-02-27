@@ -288,13 +288,19 @@ final class AudioManager: NSObject {
         }
     }
     
+    
+    
     func speak(settings: Settings, nick: Nick, item: Item, cleanedText: String) {
-        var volumeIndex = settings.volume + nick.volume!
+        let conversation = (item.conversation && settings.overrideForConversations ?? false)
+        var volumeIndex = (
+            (conversation ? settings.volumeForConversations : settings.volume) ?? settings.volume
+        ) + nick.volume!
         if volumeIndex < 0 { volumeIndex = 0 }
         else if volumeIndex > volumes.endIndex { volumeIndex = volumes.endIndex }
-
-        let ssmlRate = Rate.ssml(rawValue: nick.rate!)
-        let ssmlPitch = Pitch.fromRawValue(rawValue: nick.pitch!).ssml()
+        let nickRate = (conversation ? settings.rateForConversations : nick.rate) ?? nick.rate!
+        let nickPitch = (conversation ? settings.pitchForConversations : nick.pitch) ?? nick.pitch!
+        let ssmlRate = Rate.ssml(rawValue: nickRate)
+        let ssmlPitch = Pitch.fromRawValue(rawValue: nickPitch).ssml()
         let ssmlVolume = ssmlVolumes[volumeIndex]
         var customRewardProsody = ""
         let customReward = item.customReward
@@ -309,18 +315,19 @@ final class AudioManager: NSObject {
         let ssml = "<speak>\(primingBreak)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/>\(customRewardProsody)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
         log?.print(ssml)
 
+        let nickVoice = (conversation ? settings.voiceForConversations : nick.voice) ?? nick.voice!
         var voiceId: String
         if speechTools.recognizer.languageConstraints.count > 1 {
             speechTools.recognizer.processString(cleanedText)
             let language = speechTools.recognizer.dominantLanguage?.rawValue ?? speechTools.recognizer.languageConstraints.first!.rawValue
-            voiceId = speechTools.voices[language]?[nick.voice!] ?? speechTools.voices.values.first?[nick.voice!] ?? "com.apple.voice.compact.en-US.Samantha"
+            voiceId = speechTools.voices[language]?[nickVoice] ?? speechTools.voices.values.first?[nickVoice] ?? "com.apple.voice.compact.en-US.Samantha"
         } else {
-            voiceId = speechTools.voices.values.first?[nick.voice!] ?? "com.apple.voice.compact.en-US.Samantha"
+            voiceId = speechTools.voices.values.first?[nickVoice] ?? "com.apple.voice.compact.en-US.Samantha"
         }
-        log?.print("queued speech", nick.name, nick.voice!,
+        log?.print("queued speech", nick.name, nickVoice,
               "volume", ssmlVolume, String(volumes[volumeIndex]),
-              "rate", ssmlRate, String(nick.rate!),
-              "pitch", String(ssmlPitch), String(nick.pitch!),
+              "rate", ssmlRate, String(nickRate),
+              "pitch", String(ssmlPitch), String(nickPitch),
               "queue size", String(utterances.count))
         
         DispatchQueue.global(qos: .background).async {

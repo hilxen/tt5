@@ -31,6 +31,7 @@ The app can be put into the background, so you can run other streaming apps like
 - do not speak URLs
 - do not speak chat bot commands starting with "!"
 - wake up bluetooth speaker
+- customize speech for conversations
 
 **New in version 1.4**
 - announce custom rewards with alert sound

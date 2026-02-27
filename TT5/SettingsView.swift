@@ -34,6 +34,12 @@ struct SettingsView: View {
     @State var rateValue: Float = Rate.normal.rawValue
     @State var pitch: Pitch = .normal
     @State var voice: Voice = .female
+    @State private var overrideForConversations: Bool = false
+    @State private var volumeForConversations: Int = 0
+    @State var rateValueForConversations: Float = Rate.normal.rawValue
+    @State var pitchForConversations: Pitch = .normal
+    @State var voiceForConversations: Voice = .female
+
     @State private var showHelp = false
     @State var enabledLanguages: [Language] = []
     @Binding var forceShowSettings: Bool
@@ -103,6 +109,61 @@ struct SettingsView: View {
                     Spacer()
                     Toggle("", isOn: $muteConversations)
                 }.padding(.vertical, 5)
+                HStack {
+                    Image(systemName: "person.2.badge.gearshape.fill").padding(.trailing, 4)
+                    Text("Customize Conversations").bold()
+                    Spacer()
+                    Toggle("", isOn: $overrideForConversations)
+                }.padding(.vertical, 5)
+                if overrideForConversations {
+                    VStack {
+                        HStack {
+                            Text("Speech Volume")
+                            Spacer()
+                            Image(systemName: "speaker.minus.fill").onTapGesture {
+                                if volumeForConversations > minVolume {
+                                    volumeForConversations -= 1
+                                }
+                            }
+                            Text("\(volumeForConversations)").padding(.horizontal, 20)
+                            Image(systemName: "speaker.plus.fill").onTapGesture {
+                                if volumeForConversations < maxVolume {
+                                    volumeForConversations += 1
+                                }
+                            }
+                        }.padding(.vertical, 5)
+                        HStack {
+                            Text("Voice")
+                            Spacer()
+                            Picker("", selection: $voiceForConversations) {
+                                ForEach(Voice.allCases, id: \.self) {
+                                    Text($0.description())
+                                }
+                            }
+                            .pickerStyle(.menu)
+                        }
+                        HStack {
+                            Text("Voice Pitch")
+                            Spacer()
+                            Picker("", selection: $pitchForConversations) {
+                                ForEach(Pitch.allCases, id: \.self) {
+                                    Text($0.description())
+                                }
+                            }
+                            .pickerStyle(.menu)
+                        }
+                        HStack {
+                            Text("Speech Rate")
+                            Spacer()
+                            Slider(
+                                value: $rateValueForConversations,
+                                in: Rate.min.rawValue...Rate.max.rawValue,
+                                step: Rate.step
+                            )
+                        }
+                    }.padding(.leading, 20)
+                }
+
                 HStack {
                     Image(systemName: "speaker.slash.fill").padding(.leading, 2).padding(.trailing, 10)
                     Text("All muted")
@@ -232,6 +293,11 @@ struct SettingsView: View {
             highlighted = settings.first!.highlighted
             customRewards = settings.first!.customRewards ?? true
             muteConversations = settings.first!.muteConversations ?? false
+            overrideForConversations = settings.first!.overrideForConversations ?? false
+            volumeForConversations = settings.first!.volumeForConversations ?? volume
+            rateValueForConversations = settings.first!.rateForConversations ?? rateValue
+            pitchForConversations = Pitch.allCases.first(where: {$0.rawValue == settings.first!.pitchForConversations}) ?? pitch
+            voiceForConversations = Voice.allCases.first(where: {$0.rawValue == settings.first!.voiceForConversations}) ?? voice
             initLanguages()
         }.onDisappear {
             save()
@@ -262,6 +328,11 @@ struct SettingsView: View {
         self.settings.first!.highlighted = highlighted
         self.settings.first!.customRewards = customRewards
         self.settings.first!.muteConversations = muteConversations
+        self.settings.first!.overrideForConversations = overrideForConversations
+        self.settings.first!.volumeForConversations = volumeForConversations
+        self.settings.first!.rateForConversations = rateValueForConversations
+        self.settings.first!.pitchForConversations = pitchForConversations.rawValue
+        self.settings.first!.voiceForConversations = voiceForConversations.rawValue
         let normalizedChannel = normalizeChannelName(channel)
         if !normalizedChannel.isEmpty && !channels.contains(where: {$0.name == normalizedChannel}) {
             modelContext.insert(Channel(name: normalizedChannel))
