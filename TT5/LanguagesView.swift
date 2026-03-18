@@ -10,7 +10,7 @@ import NaturalLanguage
 import AVFoundation
 
 func voiceName(_ id: String) -> String {
-    let name = id.components(separatedBy: ".").last!
+    let name = id.components(separatedBy: ".").last! + (id.contains("enhanced") ? " (enhanced)" : "")
     if name.starts(with: "siri_") {
         return name.components(separatedBy: "_")[1]
     } else {

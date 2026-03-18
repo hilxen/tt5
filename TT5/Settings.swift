@@ -129,6 +129,11 @@ final class Settings: Codable {
         case version
         case bannedWordsEnabled
         case muteConversations
+        case overrideForConversations
+        case volumeForConversations
+        case rateForConversations
+        case pitchForConversations
+        case voiceForConversations
     }
     
     required init(from decoder: Decoder) throws {
@@ -148,6 +153,11 @@ final class Settings: Codable {
         version = try container.decodeIfPresent(String.self, forKey: .version)
         bannedWordsEnabled = try container.decodeIfPresent(Bool.self, forKey: .bannedWordsEnabled)
         muteConversations = try container.decodeIfPresent(Bool.self, forKey: .muteConversations) ?? false
+        overrideForConversations = try container.decodeIfPresent(Bool.self, forKey: .overrideForConversations) ?? false
+        volumeForConversations = try container.decodeIfPresent(Int.self, forKey: .volumeForConversations) ?? self.volume
+        rateForConversations = try container.decodeIfPresent(Float.self, forKey: .rateForConversations) ?? self.rate
+        pitchForConversations = try container.decodeIfPresent(Float.self, forKey: .pitchForConversations) ?? self.pitch
+        voiceForConversations = try container.decodeIfPresent(String.self, forKey: .voiceForConversations) ?? self.voice
     }
 
     func encode(to encoder: Encoder) throws {
@@ -167,6 +177,11 @@ final class Settings: Codable {
         try container.encodeIfPresent(version, forKey: .version)
         try container.encodeIfPresent(bannedWordsEnabled, forKey: .bannedWordsEnabled)
         try container.encodeIfPresent(muteConversations, forKey: .muteConversations)
+        try container.encodeIfPresent(overrideForConversations, forKey: .overrideForConversations)
+        try container.encodeIfPresent(volumeForConversations, forKey: .volumeForConversations)
+        try container.encodeIfPresent(rateForConversations, forKey: .rateForConversations)
+        try container.encodeIfPresent(pitchForConversations, forKey: .pitchForConversations)
+        try container.encodeIfPresent(voiceForConversations, forKey: .voiceForConversations)
     }
     
     var channel: String
@@ -184,7 +199,12 @@ final class Settings: Codable {
     var version: String?
     var bannedWordsEnabled: Bool?
     var muteConversations: Bool?
-    
+    var overrideForConversations: Bool?
+    var volumeForConversations: Int?
+    var rateForConversations: Float?
+    var pitchForConversations: Float?
+    var voiceForConversations: String?
+
     init(channel: String, volume: Int, muted: Bool, rate: Rate, pitch: Pitch, voice: Voice,
          mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool, customRewards: Bool, bannedWordsEnabled: Bool, muteConversations: Bool) {
         self.channel = channel
@@ -201,6 +221,11 @@ final class Settings: Codable {
         self.customRewards = customRewards
         self.bannedWordsEnabled = bannedWordsEnabled
         self.muteConversations = muteConversations
+        self.overrideForConversations = false
+        self.volumeForConversations = self.volume
+        self.rateForConversations = self.rate
+        self.pitchForConversations = self.pitch
+        self.voiceForConversations = self.voice
     }
     
     init(_ copy: Settings) {
@@ -218,6 +243,11 @@ final class Settings: Codable {
         self.customRewards = copy.customRewards
         self.bannedWordsEnabled = copy.bannedWordsEnabled
         self.muteConversations = copy.muteConversations
+        self.overrideForConversations = copy.overrideForConversations
+        self.volumeForConversations = copy.volumeForConversations
+        self.rateForConversations = copy.rateForConversations
+        self.pitchForConversations = copy.pitchForConversations
+        self.voiceForConversations = copy.voiceForConversations
     }
     
     func set(_ copy: Settings) {
@@ -235,6 +265,11 @@ final class Settings: Codable {
         self.customRewards = copy.customRewards
         self.bannedWordsEnabled = copy.bannedWordsEnabled
         self.muteConversations = copy.muteConversations
+        self.overrideForConversations = copy.overrideForConversations
+        self.volumeForConversations = copy.volumeForConversations
+        self.rateForConversations = copy.rateForConversations
+        self.pitchForConversations = copy.pitchForConversations
+        self.voiceForConversations = copy.voiceForConversations
     }
 }
 
