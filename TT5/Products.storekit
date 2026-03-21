@@ -1,0 +1,87 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "543E7238",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6760869357",
+      "localizations" : [
+        {
+          "description" : "Optional tip to support ongoing development",
+          "displayName" : "Thank You!",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_1",
+      "referenceName" : "Tip - $0.99",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "6760868893",
+      "localizations" : [
+        {
+          "description" : "Optional tip to support ongoing development",
+          "displayName" : "Big Thanks!",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_5",
+      "referenceName" : "Tip - $4.99",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "6760868471",
+      "localizations" : [
+        {
+          "description" : "Optional tip to support ongoing development",
+          "displayName" : "Super Support!",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip_10",
+      "referenceName" : "Tip - $9.99",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6739819286",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_developerTeamID" : "",
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 795660279.42937303,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

@@ -28,6 +28,8 @@
 		E5B9951C2D0522E500BE7865 /* WebSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B9951B2D0522E500BE7865 /* WebSocketConnection.swift */; };
 		E5B995232D0579CD00BE7865 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B995222D0579CD00BE7865 /* AudioManager.swift */; };
 		E5B995412D06730700BE7865 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B995402D06730700BE7865 /* Settings.swift */; };
+		E5BDE3462F6CC5F00044DEDE /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = E5BDE3452F6CC5F00044DEDE /* Products.storekit */; };
+		E5BDE34A2F6CCC520044DEDE /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5BDE3492F6CCC520044DEDE /* StoreKit.framework */; };
 		E5D977872D081472002A8DE1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5D977862D081467002A8DE1 /* SettingsView.swift */; };
 		E5EEC7FA2D2AF4C700CBFE60 /* ProfilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EEC7F92D2AF4BB00CBFE60 /* ProfilesView.swift */; };
 		E5EEC7FE2D2E252600CBFE60 /* BannedWordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EEC7FD2D2E251800CBFE60 /* BannedWordsView.swift */; };
@@ -60,6 +62,8 @@
 		E5B9951B2D0522E500BE7865 /* WebSocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketConnection.swift; sourceTree = "<group>"; };
 		E5B995222D0579CD00BE7865 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		E5B995402D06730700BE7865 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		E5BDE3452F6CC5F00044DEDE /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
+		E5BDE3492F6CCC520044DEDE /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		E5D977862D081467002A8DE1 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		E5EEC7F92D2AF4BB00CBFE60 /* ProfilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilesView.swift; sourceTree = "<group>"; };
 		E5EEC7FD2D2E251800CBFE60 /* BannedWordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannedWordsView.swift; sourceTree = "<group>"; };
@@ -76,6 +80,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E512C70B2E450FF500DDC590 /* TwitchIRC in Frameworks */,
+				E5BDE34A2F6CCC520044DEDE /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,6 +136,7 @@
 				E50996FD2D1A91FD008ED3F5 /* LaunchScreen.storyboard */,
 				E512C7142E456E9200DDC590 /* CustomRewardView.swift */,
 				E512C7122E456DCF00DDC590 /* CustomRewardListView.swift */,
+				E5BDE3452F6CC5F00044DEDE /* Products.storekit */,
 			);
 			path = TT5;
 			sourceTree = "<group>";
@@ -146,6 +152,7 @@
 		E57D6DDD2D0D501D0030CBE6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E5BDE3492F6CCC520044DEDE /* StoreKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -220,6 +227,7 @@
 				E50996FE2D1A91FD008ED3F5 /* LaunchScreen.storyboard in Resources */,
 				E50E67BA2CFCBBE600654252 /* Preview Assets.xcassets in Resources */,
 				E50E67B72CFCBBE600654252 /* Assets.xcassets in Resources */,
+				E5BDE3462F6CC5F00044DEDE /* Products.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,13 +394,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"TT5/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TT5/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TT5;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "This app uses reverse speech recognition to detect, and mute banned words even if that are misspelled";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -420,13 +430,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"TT5/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TT5/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TT5;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "This app uses reverse speech recognition to detect, and mute banned words even if that are misspelled";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

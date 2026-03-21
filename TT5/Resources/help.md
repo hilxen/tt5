@@ -54,10 +54,9 @@ The app can be put into the background, so you can run other streaming apps like
 
 **Contact me**
 
-The app is provided **FREE** of charge, but any help will be appreciated. Subscribe to my Twitch channel, Telegram or donate. Even $1 helps!
+The app is provided **FREE** of charge, but any help will be appreciated. Subscribe to my Twitch channel, Telegram or donate via In-App purchase below. Even $1 helps!
 
 - My Twitch channel [twitch.tv/hilxen](https://www.twitch.tv/hilxen)
 - Telegram
   - Channel & chat [t.me/hilxens](https://t.me/hilxens)
   - Private message [t.me/hilxen](https://t.me/hilxen)
-- Donations [donationalerts.com/r/hilxen](https://www.donationalerts.com/r/hilxen)

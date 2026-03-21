@@ -31,9 +31,5 @@
 		<key>UILaunchScreen</key>
 		<string></string>
 	</dict>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>This app uses reverse speech recognition to detect, and mute banned words even if that are misspelled</string>
 </dict>
 </plist>
