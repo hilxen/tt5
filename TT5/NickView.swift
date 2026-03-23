@@ -20,7 +20,7 @@ struct NickView: View {
     @State var volume: Volume = .normal
     @State var rateValue: Float = Rate.normal.rawValue
     @State var pitch: Pitch = .normal
-    @State var voice: Voice = .female
+    @State var voice: String = Voice.female.rawValue
 
     let minVolume: Int = 0
     let maxVolume: Int = 10
@@ -81,8 +81,8 @@ struct NickView: View {
                     Text("Voice")
                     Spacer()
                     Picker("Voice", selection: $voice) {
-                        ForEach(Voice.allCases, id: \.self) {
-                            Text($0.description())
+                        ForEach(AudioManager.shared.speechTools.allVoices(), id: \.self) {
+                            Text($0.localizedCapitalized)
                         }
                     }
                     .pickerStyle(.menu)
@@ -116,7 +116,7 @@ struct NickView: View {
             self.volume = Volume.allCases.first(where: {$0.rawValue == nick.volume}) ?? .normal
             self.rateValue = nick.rate ?? Rate.normal.rawValue
             self.pitch = Pitch.allCases.first(where: {$0.rawValue == nick.pitch}) ?? .normal
-            self.voice = Voice.allCases.first(where: {$0.rawValue == nick.voice}) ?? .female
+            self.voice = nick.voice ?? Voice.female.rawValue
         }.onDisappear {
             save()
         }

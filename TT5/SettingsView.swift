@@ -31,14 +31,15 @@ struct SettingsView: View {
     @State private var highlighted: Bool = true
     @State private var customRewards: Bool = true
     @State private var muteConversations: Bool = false
+    @State private var showStreamPreview: Bool = true
     @State var rateValue: Float = Rate.normal.rawValue
     @State var pitch: Pitch = .normal
-    @State var voice: Voice = .female
+    @State var voice: String = Voice.female.rawValue
     @State private var overrideForConversations: Bool = false
     @State private var volumeForConversations: Int = 0
     @State var rateValueForConversations: Float = Rate.normal.rawValue
     @State var pitchForConversations: Pitch = .normal
-    @State var voiceForConversations: Voice = .female
+    @State var voiceForConversations: String = Voice.female.rawValue
 
     @State private var showHelp = false
     @State var enabledLanguages: [Language] = []
@@ -103,18 +104,12 @@ struct SettingsView: View {
                         Text("Banned Words")
                     }
                 }.padding(.vertical, 5)
-                HStack {
-                    Image(systemName: "person.2.slash.fill").padding(.trailing, 4)
-                    Text("Mute conversations")
-                    Spacer()
-                    Toggle("", isOn: $muteConversations)
-                }.padding(.vertical, 5)
-                HStack {
-                    Image(systemName: "person.2.badge.gearshape.fill").padding(.trailing, 4)
-                    Text("Customize Conversations").bold()
-                    Spacer()
-                    Toggle("", isOn: $overrideForConversations)
-                }.padding(.vertical, 5)
+                Toggle(isOn: $muteConversations) {
+                    Label("Mute conversations", systemImage: "person.2.slash.fill").foregroundStyle(.black)
+                }
+                Toggle(isOn: $overrideForConversations) {
+                    Label("Customize Conversations", systemImage: "person.2.badge.gearshape.fill").foregroundStyle(.black).bold()
+                }
                 if overrideForConversations {
                     VStack {
                         HStack {
@@ -136,8 +131,8 @@ struct SettingsView: View {
                             Text("Voice")
                             Spacer()
                             Picker("", selection: $voiceForConversations) {
-                                ForEach(Voice.allCases, id: \.self) {
-                                    Text($0.description())
+                                ForEach(AudioManager.shared.speechTools.allVoices(), id: \.self) {
+                                    Text($0.localizedCapitalized)
                                 }
                             }
                             .pickerStyle(.menu)
@@ -163,55 +158,51 @@ struct SettingsView: View {
                         }
                     }.padding(.leading, 20)
                 }
-
-                HStack {
-                    Image(systemName: "speaker.slash.fill").padding(.leading, 2).padding(.trailing, 10)
-                    Text("All muted")
-                    Spacer()
-                    Toggle("", isOn: $muted)
-                }.padding(.vertical, 5)
+                Toggle(isOn: $muted) {
+                    Label("All muted", systemImage: "speaker.slash.fill").foregroundStyle(.black)
+                }
                 HStack {
                     Image(systemName: "person.badge.shield.checkmark.fill")
                     Image(systemName: "speaker")
                     Text("Exceptions").bold()
                 }.padding(.vertical, 5)
                 VStack {
-                    HStack {
-                        Image("mod").resizable().scaledToFit().frame(height: 20)
-                        Text("Moderators")
-                        Spacer()
-                        Toggle("", isOn: $mods)
-                    }.padding(.bottom, 5)
-                    HStack {
-                        Image("vip").resizable().scaledToFit().frame(height: 20)
-                        Text("VIPs")
-                        Spacer()
-                        Toggle("", isOn: $vips)
-                    }.padding(.bottom, 5)
-                    HStack {
-                        Image("sub").resizable().scaledToFit().frame(height: 20)
-                        Text("Subscribers")
-                        Spacer()
-                        Toggle("", isOn: $subscribers)
-                    }.padding(.bottom, 5)
-                    HStack {
-                        Image("own").resizable().scaledToFit().frame(height: 20)
-                        Text("Channel owner")
-                        Spacer()
-                        Toggle("", isOn: $broadcaster)
-                    }.padding(.bottom, 5)
-                    HStack {
-                        Image(systemName: "highlighter").resizable().scaledToFit().frame(height: 20)
-                        Text("Highlighted text")
-                        Spacer()
-                        Toggle("", isOn: $highlighted)
-                    }.padding(.bottom, 5)
-                    HStack {
-                        Image("reward").resizable().scaledToFit().frame(height: 20)
-                        Text("Custom rewards")
-                        Spacer()
-                        Toggle("", isOn: $customRewards)
-                    }.padding(.bottom, 5)
+                    Toggle(isOn: $mods) {
+                        HStack {
+                            Image("mod").resizable().scaledToFit().frame(height: 20)
+                            Text("Moderators")
+                        }
+                    }
+                    Toggle(isOn: $vips) {
+                        HStack {
+                            Image("vip").resizable().scaledToFit().frame(height: 20)
+                            Text("VIPs")
+                        }
+                    }
+                    Toggle(isOn: $subscribers) {
+                        HStack {
+                            Image("sub").resizable().scaledToFit().frame(height: 20)
+                            Text("Subscribers")
+                        }
+                    }
+                    Toggle(isOn: $broadcaster) {
+                        HStack {
+                            Image("own").resizable().scaledToFit().frame(height: 20)
+                            Text("Channel owner")
+                        }
+                    }
+                    Toggle(isOn: $highlighted) {
+                        HStack {
+                            Image(systemName: "highlighter").resizable().scaledToFit().frame(height: 20)
+                            Text("Highlighted text")
+                        }
+                    }
+                    Toggle(isOn: $customRewards) {
+                        HStack {
+                            Image("reward").resizable().scaledToFit().frame(height: 20)
+                            Text("Custom rewards")
+                        }
+                    }
                 }.padding(.leading, 25)
                 HStack {
                     Image(systemName: "gearshape.fill")
@@ -222,8 +213,8 @@ struct SettingsView: View {
                         Text("Voice")
                         Spacer()
                         Picker("", selection: $voice) {
-                            ForEach(Voice.allCases, id: \.self) {
-                                Text($0.description())
+                            ForEach(AudioManager.shared.speechTools.allVoices(), id: \.self) {
+                                Text($0.localizedCapitalized)
                             }
                         }
                         .pickerStyle(.menu)
@@ -260,6 +251,9 @@ struct SettingsView: View {
                         Text("Custom Rewards").padding(.leading, 20)
                     }
                 }.padding(.vertical, 5)
+                Toggle(isOn: $showStreamPreview) {
+                    Label("Show stream preview", systemImage: "play.rectangle").foregroundStyle(.black)
+                }
                 HStack {
                     NavigationLink(destination: ProfilesView()) {
                         Image(systemName: "folder.badge.gearshape")
@@ -285,7 +279,7 @@ struct SettingsView: View {
             muted = settings.first!.muted
             rateValue = settings.first!.rate
             pitch = Pitch.allCases.first(where: {$0.rawValue == settings.first!.pitch}) ?? .normal
-            voice = Voice.allCases.first(where: {$0.rawValue == settings.first!.voice}) ?? .female
+            voice = settings.first!.voice
             mods = settings.first!.mods
             vips = settings.first!.vips
             subscribers = settings.first!.subscribers
@@ -293,11 +287,12 @@ struct SettingsView: View {
             highlighted = settings.first!.highlighted
             customRewards = settings.first!.customRewards ?? true
             muteConversations = settings.first!.muteConversations ?? false
+            showStreamPreview = settings.first!.showStreamPreview ?? true
             overrideForConversations = settings.first!.overrideForConversations ?? false
             volumeForConversations = settings.first!.volumeForConversations ?? volume
             rateValueForConversations = settings.first!.rateForConversations ?? rateValue
             pitchForConversations = Pitch.allCases.first(where: {$0.rawValue == settings.first!.pitchForConversations}) ?? pitch
-            voiceForConversations = Voice.allCases.first(where: {$0.rawValue == settings.first!.voiceForConversations}) ?? voice
+            voiceForConversations = settings.first!.voiceForConversations ?? voice
             initLanguages()
         }.onDisappear {
             save()
@@ -320,7 +315,7 @@ struct SettingsView: View {
         settings.first!.muted = muted
         self.settings.first!.rate = rateValue
         self.settings.first!.pitch = pitch.rawValue
-        self.settings.first!.voice = voice.rawValue
+        self.settings.first!.voice = voice
         self.settings.first!.mods = mods
         self.settings.first!.vips = vips
         self.settings.first!.subscribers = subscribers
@@ -328,11 +323,12 @@ struct SettingsView: View {
         self.settings.first!.highlighted = highlighted
         self.settings.first!.customRewards = customRewards
         self.settings.first!.muteConversations = muteConversations
+        self.settings.first!.showStreamPreview = showStreamPreview
         self.settings.first!.overrideForConversations = overrideForConversations
         self.settings.first!.volumeForConversations = volumeForConversations
         self.settings.first!.rateForConversations = rateValueForConversations
         self.settings.first!.pitchForConversations = pitchForConversations.rawValue
-        self.settings.first!.voiceForConversations = voiceForConversations.rawValue
+        self.settings.first!.voiceForConversations = voiceForConversations
         let normalizedChannel = normalizeChannelName(channel)
         if !normalizedChannel.isEmpty && !channels.contains(where: {$0.name == normalizedChannel}) {
             modelContext.insert(Channel(name: normalizedChannel))
@@ -349,6 +345,7 @@ struct SettingsView: View {
         var added: [String: Language] = [:]
         enabledLanguages.removeAll()
         for voice in voices {
+            //print(voice.language, voice.name, voice.identifier, voice.gender)
             var language = languages.first(where: {$0.name == voice.language}) ?? added[voice.language]
             let found: Bool = language != nil
             if !found {
@@ -371,9 +368,15 @@ struct SettingsView: View {
                 enabledLanguages.append(language!)
             }
         }
+        let availableIDs = Set(voices.map { $0.identifier })
+        for language in languages {
+            language.voiceIds.removeAll { voiceId in
+                !availableIDs.contains(voiceId.id)
+            }
+        }
         if enabledLanguages.isEmpty {
             let defaultLanuage = "en-US"
-            var language = languages.first(where: {$0.name == defaultLanuage}) ?? added[defaultLanuage]!
+            let language = languages.first(where: {$0.name == defaultLanuage}) ?? added[defaultLanuage]!
             language.enabled = true
             enabledLanguages.append(language)
         }

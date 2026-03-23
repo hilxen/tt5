@@ -101,14 +101,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
             forceShowSettings = true
         }
         audioManager.speechTools.recognizer.languageConstraints = enabledLanguages.map({NLLanguage($0.languageCode())})
-        var enabledVoices = [String: [String: String]]()
-        for language in enabledLanguages {
-            enabledVoices[language.languageCode()] = [
-                "female": language.femaleVoiceId ?? language.maleVoiceId!,
-                "male": language.maleVoiceId ?? language.femaleVoiceId!
-            ]
-        }
-        audioManager.speechTools.voices = enabledVoices
+        audioManager.speechTools.voices = getEnabledVoices(enabledLanguages)
         audioManager.setLog(log)
         checkNeedRefresh()
     }
@@ -296,7 +289,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                 SettingsView(forceShowSettings: $forceShowSettings)
             } else {
                 let copyOfSettings = settings.first
-                if copyOfSettings != nil && !copyOfSettings!.channel.isEmpty {
+                if copyOfSettings != nil && !copyOfSettings!.channel.isEmpty && copyOfSettings?.showStreamPreview ?? true {
                     TwitchPlayerWebView(shouldRefresh: model.shouldRefresh, shouldMute: model.shouldMute, shouldHeartbeat: model.shouldHeartbeat, delegate: self)
                         .frame(height: isVideoCollapsed ? 50 : 200)
                         .padding([.all], 5)
@@ -403,10 +396,12 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                             Image(systemName: "textformat.size.smaller")
                         }
                         Spacer()
-                        Button {
-                            isVideoCollapsed = !isVideoCollapsed
-                        } label: {
-                            Image(systemName: isVideoCollapsed ? "arrowtriangle.down.circle": "arrowtriangle.up.circle").resizable().scaledToFit().frame(height: 28).padding(.trailing, 8)
+                        if copyOfSettings != nil && !copyOfSettings!.channel.isEmpty && copyOfSettings?.showStreamPreview ?? true {
+                            Button {
+                                isVideoCollapsed = !isVideoCollapsed
+                            } label: {
+                                Image(systemName: isVideoCollapsed ? "arrowtriangle.down.circle": "arrowtriangle.up.circle").resizable().scaledToFit().frame(height: 28).padding(.trailing, 8)
+                            }
                         }
                         Button {
                             model.shouldMute.send(true)

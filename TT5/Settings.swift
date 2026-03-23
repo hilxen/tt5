@@ -134,6 +134,7 @@ final class Settings: Codable {
         case rateForConversations
         case pitchForConversations
         case voiceForConversations
+        case showStreamPreview
     }
     
     required init(from decoder: Decoder) throws {
@@ -158,6 +159,7 @@ final class Settings: Codable {
         rateForConversations = try container.decodeIfPresent(Float.self, forKey: .rateForConversations) ?? self.rate
         pitchForConversations = try container.decodeIfPresent(Float.self, forKey: .pitchForConversations) ?? self.pitch
         voiceForConversations = try container.decodeIfPresent(String.self, forKey: .voiceForConversations) ?? self.voice
+        showStreamPreview = try container.decodeIfPresent(Bool.self, forKey: .showStreamPreview) ?? true
     }
 
     func encode(to encoder: Encoder) throws {
@@ -182,6 +184,7 @@ final class Settings: Codable {
         try container.encodeIfPresent(rateForConversations, forKey: .rateForConversations)
         try container.encodeIfPresent(pitchForConversations, forKey: .pitchForConversations)
         try container.encodeIfPresent(voiceForConversations, forKey: .voiceForConversations)
+        try container.encodeIfPresent(showStreamPreview, forKey: .showStreamPreview)
     }
     
     var channel: String
@@ -204,9 +207,11 @@ final class Settings: Codable {
     var rateForConversations: Float?
     var pitchForConversations: Float?
     var voiceForConversations: String?
+    var showStreamPreview: Bool?
 
     init(channel: String, volume: Int, muted: Bool, rate: Rate, pitch: Pitch, voice: Voice,
-         mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool, customRewards: Bool, bannedWordsEnabled: Bool, muteConversations: Bool) {
+         mods: Bool, vips: Bool, subscribers: Bool, broadcaster: Bool, highlighted: Bool,
+         customRewards: Bool, bannedWordsEnabled: Bool, muteConversations: Bool) {
         self.channel = channel
         self.volume = volume
         self.muted = muted
@@ -226,6 +231,7 @@ final class Settings: Codable {
         self.rateForConversations = self.rate
         self.pitchForConversations = self.pitch
         self.voiceForConversations = self.voice
+        self.showStreamPreview = true
     }
     
     init(_ copy: Settings) {
@@ -248,6 +254,7 @@ final class Settings: Codable {
         self.rateForConversations = copy.rateForConversations
         self.pitchForConversations = copy.pitchForConversations
         self.voiceForConversations = copy.voiceForConversations
+        self.showStreamPreview = copy.showStreamPreview
     }
     
     func set(_ copy: Settings) {
@@ -270,6 +277,7 @@ final class Settings: Codable {
         self.rateForConversations = copy.rateForConversations
         self.pitchForConversations = copy.pitchForConversations
         self.voiceForConversations = copy.voiceForConversations
+        self.showStreamPreview = copy.showStreamPreview
     }
 }
 
@@ -336,11 +344,11 @@ final class Nick: Identifiable, Codable {
         return name
     }
     
-    func set(overrideDefaults: Bool, muted: Bool, pronunciation: String, voice: Voice, rateValue: Float, pitch: Pitch, volume: Volume) {
+    func set(overrideDefaults: Bool, muted: Bool, pronunciation: String, voice: String, rateValue: Float, pitch: Pitch, volume: Volume) {
         self.pronunciation = pronunciation
         if overrideDefaults {
             self.muted = muted
-            self.voice = voice.rawValue
+            self.voice = voice
             self.pitch = pitch.rawValue
             self.rate = rateValue
             self.volume = volume.rawValue

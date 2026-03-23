@@ -45,13 +45,7 @@ final class BannedWordsManager: NSObject {
         let voice = settings.voice
         var language = "en"
         recognizer.languageConstraints = enabledLanguages.map({NLLanguage($0.languageCode())})
-        var enabledVoices = [String: [String: String]]()
-        for language in enabledLanguages {
-            enabledVoices[language.languageCode()] = [
-                "female": language.femaleVoiceId ?? language.maleVoiceId!,
-                "male": language.maleVoiceId ?? language.femaleVoiceId!
-            ]
-        }
+        let enabledVoices = getEnabledVoices(enabledLanguages)
         if recognizer.languageConstraints.count > 1 {
             recognizer.processString(text)
             language = recognizer.dominantLanguage?.rawValue ?? recognizer.languageConstraints.first!.rawValue
@@ -112,15 +106,15 @@ final class BannedWordsManager: NSObject {
                                 }
                             }
                         }
-                        for bannedWord in bannedWords {
-                            for word in words {
-                                if !matchedWords.contains(word) && !notMatchedWords.contains(word){
-                                    notMatchedWords.append(word)
-                                }
+                        for word in words {
+                            if !matchedWords.contains(word) && !notMatchedWords.contains(word){
+                                notMatchedWords.append(word)
                             }
                         }
                     }
-                    complete(result.bestTranscription.formattedString, matchedBannedWords, notMatchedWords, voiceId)
+                    if isFinal {
+                        complete(result.bestTranscription.formattedString, matchedBannedWords, notMatchedWords, voiceId)
+                    }
                 }
             }
         }
