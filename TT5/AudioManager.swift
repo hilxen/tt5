@@ -120,6 +120,7 @@ final class AudioManager: NSObject {
     let ssmlVolumes: [String] = ["silent", "-36dB", "-27dB", "-18dB", "-9dB", "+0dB", "+9dB", "+18dB", "+27dB", "+36dB", "+44dB"]
 
     var utterances: [AVSpeechUtterance: Item] = [:]
+    private let utterancesLock = NSLock()
     var delegate: AudioManagerDelegate?
     
     override init() {
@@ -251,8 +252,11 @@ final class AudioManager: NSObject {
                       bannedWords: [BannedWord],
                       enabledLanguages: [Language]) {
         let nick = item.nick
-        if utterances.count > 5 {
-            log?.print("speech skipped", nick.name, "queue", String(utterances.count), "> 5")
+        utterancesLock.lock()
+        let queueSizeBeforeSpeak = utterances.count
+        utterancesLock.unlock()
+        if queueSizeBeforeSpeak > 5 {
+            log?.print("speech skipped", nick.name, "queue", String(queueSizeBeforeSpeak), "> 5")
             item.skipped = true
             return
         }
@@ -343,11 +347,14 @@ final class AudioManager: NSObject {
         } else {
             voiceId = speechTools.voices.values.first?[nickVoice] ?? "com.apple.voice.compact.en-US.Samantha"
         }
+        utterancesLock.lock()
+        let queueSizeBeforeQueue = utterances.count
+        utterancesLock.unlock()
         log?.print("queued speech", nick.name, nickVoice,
               "volume", ssmlVolume, String(volumes[volumeIndex]),
               "rate", ssmlRate, String(nickRate),
               "pitch", String(ssmlPitch), String(nickPitch),
-              "queue size", String(utterances.count))
+              "queue size", String(queueSizeBeforeQueue))
         
         DispatchQueue.global(qos: .background).async {
             self.speak(item: item, voiceId: voiceId, ssml: ssml)
@@ -368,7 +375,9 @@ final class AudioManager: NSObject {
         activateSession()
         let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
         utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId)
+        utterancesLock.lock()
         utterances[utterance] = item
+        utterancesLock.unlock()
         if item.customReward != nil && item.customReward!.sound != Sound.No_Sound.rawValue {
             let tmpSoundID: SystemSoundID = SystemSoundID(item.customReward!.sound)
             let context = UnsafeMutableRawPointer(Unmanaged.passRetained(AudioCallbackContext(audioManager: self, utterance: utterance)).toOpaque())
@@ -449,16 +458,24 @@ final class AudioManager: NSObject {
 
 extension AudioManager: AVSpeechSynthesizerDelegate {
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
-        if let item = utterances[utterance] {
-            log?.print("started speaking", item.nick.name, "queue size", String(utterances.count))
+        utterancesLock.lock()
+        let item = utterances[utterance]
+        let queueSize = utterances.count
+        utterancesLock.unlock()
+        if let item = item {
+            log?.print("started speaking", item.nick.name, "queue size", String(queueSize))
             delegate?.speechStarted(item: item)
         }
     }
-    
+
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         lastSpeechEndTime = Date()
-        if let item = utterances.removeValue(forKey: utterance) {
-            log?.print("stopped speaking", item.nick.name, "queue size", String(utterances.count))
+        utterancesLock.lock()
+        let item = utterances.removeValue(forKey: utterance)
+        let queueSize = utterances.count
+        utterancesLock.unlock()
+        if let item = item {
+            log?.print("stopped speaking", item.nick.name, "queue size", String(queueSize))
             delegate?.speechFinished(item: item)
         }
     }

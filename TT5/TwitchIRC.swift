@@ -47,29 +47,35 @@ class TwitchIRC: WebSocketConnectionDelegate {
     }
 
     func onConnected(connection: WebSocketConnection) {
-        delegate?.print("Connected")
-        let nick = "justinfan\(Int.random(in: 0...80000) + 1000)"
-        let pass = "SCHMOOPIIE"
-        let caps = [Capability.tags, Capability.commands];
-        send(OutgoingMessage.capabilities(caps))
-        send(OutgoingMessage.pass(pass: pass))
-        send(OutgoingMessage.nick(name: nick))
-        if !channel.isEmpty {
-            join(channel: channel)
+        DispatchQueue.main.async {
+            self.delegate?.print("Connected")
+            let nick = "justinfan\(Int.random(in: 0...80000) + 1000)"
+            let pass = "SCHMOOPIIE"
+            let caps = [Capability.tags, Capability.commands];
+            self.send(OutgoingMessage.capabilities(caps))
+            self.send(OutgoingMessage.pass(pass: pass))
+            self.send(OutgoingMessage.nick(name: nick))
+            if !self.channel.isEmpty {
+                self.join(channel: self.channel)
+            }
         }
     }
-    
+
     func onDisconnected(connection: WebSocketConnection, error: Error?) {
-        if let error = error {
-            delegate?.print(.WARNING, "Disconnected with error:\(error)")
-        } else {
-            delegate?.print("Disconnected normally")
+        DispatchQueue.main.async {
+            if let error = error {
+                self.delegate?.print(.WARNING, "Disconnected with error:\(error)")
+            } else {
+                self.delegate?.print("Disconnected normally")
+            }
+            self.connected = false
         }
-        connected = false
     }
-    
+
     func onError(connection: WebSocketConnection, error: Error) {
-        delegate?.print(.WARNING, "Connection error:\(error)")
+        DispatchQueue.main.async {
+            self.delegate?.print(.WARNING, "Connection error:\(error)")
+        }
     }
     
     func join(channel: String) {
@@ -89,35 +95,39 @@ class TwitchIRC: WebSocketConnectionDelegate {
     }
     
     func onMessage(connection: WebSocketConnection, text: String) {
-        delegate?.print("Incoming message: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
-        let twitchMessages: [(message: IncomingMessage?, text: String)] = IncomingMessage.parse(ircOutput: text)
-        delegate?.heartbeat()
-        for (message, _) in twitchMessages {
-            switch message {
-            case .ping:
-                send(.pong)
-            case .pong:
-                send(.ping)
-            case .roomState(let state):
-                //addItem(nick: "", message: "joined channel \(state.channel)")
-                delegate?.onNotification(text: "joined channel \(state.channel)")
-            case .part(let part):
-                //addItem(nick: "", message: "left channel \(part.channel)")
-                delegate?.onNotification(text: "left channel \(part.channel)")
-            case .connectionNotice(let notice):
-                if notice.number == 376 {
-                    //addItem(nick: "", message: "connected to Twitch")
-                    delegate?.onNotification(text: "connected to Twitch")
+        DispatchQueue.main.async {
+            self.delegate?.print("Incoming message: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
+            let twitchMessages: [(message: IncomingMessage?, text: String)] = IncomingMessage.parse(ircOutput: text)
+            self.delegate?.heartbeat()
+            for (message, _) in twitchMessages {
+                switch message {
+                case .ping:
+                    self.send(.pong)
+                case .pong:
+                    self.send(.ping)
+                case .roomState(let state):
+                    //addItem(nick: "", message: "joined channel \(state.channel)")
+                    self.delegate?.onNotification(text: "joined channel \(state.channel)")
+                case .part(let part):
+                    //addItem(nick: "", message: "left channel \(part.channel)")
+                    self.delegate?.onNotification(text: "left channel \(part.channel)")
+                case .connectionNotice(let notice):
+                    if notice.number == 376 {
+                        //addItem(nick: "", message: "connected to Twitch")
+                        self.delegate?.onNotification(text: "connected to Twitch")
+                    }
+                case .privateMessage(let pm):
+                    //addItem(nick: pm.userLogin, message: pm.message, color: pm.color)
+                    self.delegate?.onMessage(pm: pm)
+                default: break
                 }
-            case .privateMessage(let pm):
-                //addItem(nick: pm.userLogin, message: pm.message, color: pm.color)
-                delegate?.onMessage(pm: pm)
-            default: break
             }
         }
     }
-    
+
     func onMessage(connection: WebSocketConnection, data: Data) {
-        delegate?.print("Data message: \(data)")
+        DispatchQueue.main.async {
+            self.delegate?.print("Data message: \(data)")
+        }
     }
 }

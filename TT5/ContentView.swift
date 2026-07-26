@@ -184,13 +184,17 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
     }
     
     func speechStarted(item: Item) {
-        model.speakerItem = item
-        model.speakerActive = true
-        model.speakerCountdown = -1
+        DispatchQueue.main.async {
+            self.model.speakerItem = item
+            self.model.speakerActive = true
+            self.model.speakerCountdown = -1
+        }
     }
-    
+
     func speechFinished(item: Item) {
-        model.speakerCountdown = 2
+        DispatchQueue.main.async {
+            self.model.speakerCountdown = 2
+        }
     }
     
     func videoMuteState(muted: Bool) {

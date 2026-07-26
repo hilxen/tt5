@@ -76,8 +76,10 @@ final class BannedWordsManager: NSObject {
             speechDelegate.speechRecognizer!.supportsOnDeviceRecognition = true
             speechDelegate.speechRecognizer!.recognitionTask(with: recognitionRequest) { result, error in
                 guard let result = result else {
-                    self.log?.print("There was an error: \(error.debugDescription)")
-                    complete("", [], [], voiceId)
+                    DispatchQueue.main.async {
+                        self.log?.print("There was an error: \(error.debugDescription)")
+                        complete("", [], [], voiceId)
+                    }
                     return
                 }
                 DispatchQueue.main.async {
