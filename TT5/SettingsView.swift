@@ -105,10 +105,10 @@ struct SettingsView: View {
                     }
                 }.padding(.vertical, 5)
                 Toggle(isOn: $muteConversations) {
-                    Label("Mute conversations", systemImage: "person.2.slash.fill").foregroundStyle(.black)
+                    Label("Mute conversations", systemImage: "person.2.slash.fill")
                 }
                 Toggle(isOn: $overrideForConversations) {
-                    Label("Customize Conversations", systemImage: "person.2.badge.gearshape.fill").foregroundStyle(.black).bold()
+                    Label("Customize Conversations", systemImage: "person.2.badge.gearshape.fill").bold()
                 }
                 if overrideForConversations {
                     VStack {
@@ -159,7 +159,7 @@ struct SettingsView: View {
                     }.padding(.leading, 20)
                 }
                 Toggle(isOn: $muted) {
-                    Label("All muted", systemImage: "speaker.slash.fill").foregroundStyle(.black)
+                    Label("All muted", systemImage: "speaker.slash.fill")
                 }
                 HStack {
                     Image(systemName: "person.badge.shield.checkmark.fill")
@@ -252,7 +252,7 @@ struct SettingsView: View {
                     }
                 }.padding(.vertical, 5)
                 Toggle(isOn: $showStreamPreview) {
-                    Label("Show stream preview", systemImage: "play.rectangle").foregroundStyle(.black)
+                    Label("Show stream preview", systemImage: "play.rectangle")
                 }
                 HStack {
                     NavigationLink(destination: ProfilesView()) {

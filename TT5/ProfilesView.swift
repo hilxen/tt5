@@ -75,8 +75,8 @@ struct ProfilesView: View {
     @State private var multiSelection = Set<String>()
     @State private var profiles: [URL] = []
     @State private var actionFeedback = false
-    let itemHighlightColor = Color(red: 231/255, green: 211/255, blue: 253/255)
-    let itemSelectColor = Color(red: 210/255, green: 208/255, blue: 214/255)
+    let itemHighlightColor = Color("itemHighlightColor")
+    let itemSelectColor = Color("itemSelectedColor")
     
     func reloadProfiles() {
         profiles.removeAll()
@@ -197,7 +197,7 @@ struct ProfilesView: View {
                     HStack {
                         Text(itemName).background(name == itemName && actionFeedback ? itemHighlightColor: Color.clear)
                     }
-                    .listRowBackground(name == itemName && actionFeedback ? itemHighlightColor: (multiSelection.contains(url.id) ? itemSelectColor: Color.white))
+                    .listRowBackground(name == itemName && actionFeedback ? itemHighlightColor: (multiSelection.contains(url.id) ? itemSelectColor: Color.clear))
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) {
                             delete(url)

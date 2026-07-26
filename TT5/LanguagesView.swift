@@ -98,8 +98,13 @@ struct VoiceIdsView: View {
 struct LanguagesView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Language.name) private var languages: [Language]
-    
-    
+    @State private var searchText: String = ""
+
+    var filteredLanguages: [Language] {
+        guard !searchText.isEmpty else { return languages }
+        return languages.filter { $0.displayName().localizedCaseInsensitiveContains(searchText) }
+    }
+
     var body: some View {
         VStack(
             alignment: .leading,
@@ -107,7 +112,7 @@ struct LanguagesView: View {
         ) {
             Text("Tip: for best experience select only one or two languages to enable voice synthesis")
                 .padding(.horizontal, 20)
-            List(languages) {language in
+            List(filteredLanguages) {language in
                 VStack{
                     HStack{
                         Text(language.displayName())
@@ -140,5 +145,6 @@ struct LanguagesView: View {
             }
         }
         .navigationTitle("Languages")
+        .searchable(text: $searchText, prompt: "Search languages")
     }
 }

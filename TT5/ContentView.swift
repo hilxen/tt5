@@ -400,30 +400,34 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                             Button {
                                 isVideoCollapsed = !isVideoCollapsed
                             } label: {
-                                Image(systemName: isVideoCollapsed ? "arrowtriangle.down.circle": "arrowtriangle.up.circle").resizable().scaledToFit().frame(height: 28).padding(.trailing, 8)
+                                Image(systemName: isVideoCollapsed ? "arrowtriangle.down.circle": "arrowtriangle.up.circle").resizable().scaledToFit().frame(height: 28)
                             }
                         }
                         Button {
                             model.shouldMute.send(true)
                         } label: {
-                            Image(systemName: isVideoMuted ? "speaker.slash.circle": "speaker.wave.2.circle").resizable().scaledToFit().frame(height: 28).padding(.trailing, 8)
+                            Image(systemName: isVideoMuted ? "speaker.slash.circle": "speaker.wave.2.circle").resizable().scaledToFit().frame(height: 28)
                         }
-                        Button {
-                            model.shouldRefresh.send(true)
-                            twitchIRC.disconnect()
-                            checkNeedRefresh()
+                        Menu {
+                            Button {
+                                model.shouldRefresh.send(true)
+                                twitchIRC.disconnect()
+                                checkNeedRefresh()
+                            } label: {
+                                Label("Refresh", systemImage: "arrow.clockwise")
+                            }
+                            Button {
+                                showSettings = true
+                            } label: {
+                                Label("Settings", systemImage: "gearshape")
+                            }
+                            Button {
+                                showHelp = true
+                            } label: {
+                                Label("Help", systemImage: "questionmark.circle.fill")
+                            }
                         } label: {
-                            Image(systemName: "arrow.clockwise")
-                        }
-                        Button {
-                            showSettings = true
-                        } label: {
-                            Image(systemName: "gearshape")
-                        }
-                        Button {
-                            showHelp = true
-                        } label: {
-                            Image(systemName: "questionmark.circle.fill")
+                            Image(systemName: "ellipsis.circle")
                         }
                     }
                 }
