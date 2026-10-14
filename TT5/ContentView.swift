@@ -50,8 +50,8 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
     @State private var isVideoCollapsed: Bool = false
     @StateObject private var volumeObserver = VolumeObserver()
     
-    @ObservedObject private var model = Model()
-    let twitchIRC = TwitchIRC()
+    @StateObject private var model = Model()
+    @State private var twitchIRC = TwitchIRC()
     let audioManager: AudioManager = AudioManager.shared
     let maxMessages: Int = 20
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -59,12 +59,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
     let itemAttentionColor = Color("itemAttentionColor")
     let itemSelectedColor = Color("itemSelectedColor")
     let itemRewardColor = Color("itemRewardColor")
-    let log = Log()
-
-    init() {
-        twitchIRC.delegate = self
-        audioManager.delegate = self
-    }
+    @State private var log = Log()
     
     func print(_ message: String...) {
         print(.INFO, message)
@@ -90,6 +85,10 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
 
     
     func onAppear() {
+        // Assign delegates here, not in init(): the copy of the view seen in init() is not yet
+        // attached to SwiftUI, so its @Query properties (e.g. settings) are empty on iOS 27
+        twitchIRC.delegate = self
+        audioManager.delegate = self
         log.setModelContext(modelContext)
         //print("****** ContentView: onAppear ******")
         initSettings()

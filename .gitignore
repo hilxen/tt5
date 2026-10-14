@@ -1,0 +1,9 @@
+# Xcode per-user state (breakpoints, scheme order, UI state)
+xcuserdata/
+
+# JetBrains IDE
+.idea/
+*.iml
+
+# macOS
+.DS_Store

@@ -35,10 +35,10 @@ extension String {
 func getEnabledVoices(_ enabledLanguages: [Language]) -> [String: [String: String]] {
     var enabledVoices = [String: [String: String]]()
     for language in enabledLanguages {
-        var voices = [
-            "female": language.femaleVoiceId ?? language.maleVoiceId!,
-            "male": language.maleVoiceId ?? language.femaleVoiceId!
-        ]
+        // Both ids are nil when the language has no installed voices; speech then uses the system voice
+        var voices: [String: String] = [:]
+        voices["female"] = language.femaleVoiceId ?? language.maleVoiceId
+        voices["male"] = language.maleVoiceId ?? language.femaleVoiceId
         for voiceId in language.voiceIds {
             voices[voiceName(voiceId.id)] = voiceId.id
         }

@@ -14,6 +14,49 @@ func normalizeChannelName(_ channel: String) -> String {
 }
 
 
+/// Loads AVSpeechSynthesisVoice.speechVoices() once per app run.
+/// speechVoices() blocks its calling thread while waiting on async work, so it runs on a plain GCD queue
+/// (on the main thread it deadlocks on iOS 27; on a Swift concurrency thread it can starve the cooperative pool).
+/// It can also never return (iOS 27 simulator with no voices installed), so callers get nil after a timeout.
+@MainActor
+enum SpeechVoiceLoader {
+    private static var voices: [AVSpeechSynthesisVoice]?
+    private static var loading = false
+    private static var waiters: [UUID: CheckedContinuation<[AVSpeechSynthesisVoice]?, Never>] = [:]
+
+    static func load(timeout: TimeInterval = 5) async -> [AVSpeechSynthesisVoice]? {
+        if let voices {
+            return voices
+        }
+        if !loading {
+            loading = true
+            DispatchQueue.global(qos: .userInitiated).async {
+                let result = AVSpeechSynthesisVoice.speechVoices()
+                Task { @MainActor in finish(result) }
+            }
+        }
+        let id = UUID()
+        return await withCheckedContinuation { continuation in
+            waiters[id] = continuation
+            DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {
+                MainActor.assumeIsolated {
+                    waiters.removeValue(forKey: id)?.resume(returning: nil)
+                }
+            }
+        }
+    }
+
+    private static func finish(_ result: [AVSpeechSynthesisVoice]) {
+        voices = result
+        loading = false
+        for continuation in waiters.values {
+            continuation.resume(returning: result)
+        }
+        waiters.removeAll()
+    }
+}
+
+
 struct SettingsView: View {
     @Environment(\.presentationMode) var presentation
     @Environment(\.modelContext) private var modelContext
@@ -293,7 +336,7 @@ struct SettingsView: View {
             rateValueForConversations = settings.first!.rateForConversations ?? rateValue
             pitchForConversations = Pitch.allCases.first(where: {$0.rawValue == settings.first!.pitchForConversations}) ?? pitch
             voiceForConversations = settings.first!.voiceForConversations ?? voice
-            initLanguages()
+            Task { await initLanguages() }
         }.onDisappear {
             save()
         }
@@ -340,11 +383,12 @@ struct SettingsView: View {
         presentation.wrappedValue.dismiss()
     }
     
-    func initLanguages() {
-        let voices = AVSpeechSynthesisVoice.speechVoices() //list of supported voices
+    func initLanguages() async {
+        // nil when the voice list did not load in time (e.g. iOS 27 simulator with no voices installed)
+        let voices = await SpeechVoiceLoader.load()
         var added: [String: Language] = [:]
         enabledLanguages.removeAll()
-        for voice in voices {
+        for voice in voices ?? [] {
             //print(voice.language, voice.name, voice.identifier, voice.gender)
             var language = languages.first(where: {$0.name == voice.language}) ?? added[voice.language]
             let found: Bool = language != nil
@@ -362,23 +406,32 @@ struct SettingsView: View {
                 language!.maleVoiceId = voice.identifier
             }
             if !found {
-                modelContext.insert(Language(name: voice.language, enabled: false))
+                modelContext.insert(language!)
             }
             if language!.enabled && !enabledLanguages.contains(where: {$0.name == language!.name}) {
                 enabledLanguages.append(language!)
             }
         }
-        let availableIDs = Set(voices.map { $0.identifier })
-        for language in languages {
-            language.voiceIds.removeAll { voiceId in
-                !availableIDs.contains(voiceId.id)
+        if let voices {
+            let availableIDs = Set(voices.map { $0.identifier })
+            for language in languages {
+                language.voiceIds.removeAll { voiceId in
+                    !availableIDs.contains(voiceId.id)
+                }
             }
+        } else {
+            enabledLanguages = languages.filter { $0.enabled }
         }
         if enabledLanguages.isEmpty {
             let defaultLanuage = "en-US"
-            let language = languages.first(where: {$0.name == defaultLanuage}) ?? added[defaultLanuage]!
-            language.enabled = true
-            enabledLanguages.append(language)
+            var language = languages.first(where: {$0.name == defaultLanuage}) ?? added[defaultLanuage]
+            if language == nil {
+                // No en-US voice installed: still enable it so speech falls back to the system voice
+                language = Language(name: defaultLanuage, enabled: false)
+                modelContext.insert(language!)
+            }
+            language!.enabled = true
+            enabledLanguages.append(language!)
         }
         try! modelContext.save()
     }

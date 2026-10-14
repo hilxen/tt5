@@ -23,6 +23,10 @@ The app can be put into the background, so you can run other streaming apps like
 - Customize nick's pronunciation
 - Announce custom rewards
 
+**New in version 1.6**
+- iOS 27 support
+- various fixes
+
 **New in version 1.5**
 - dark mode support
 - mute conversations option in settings
