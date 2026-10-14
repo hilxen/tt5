@@ -2,7 +2,7 @@
 //  LanguagesView.swift
 //  TT5
 //
-//  Created by Hilxen on 12/21/24.
+//  Copyright (c) Hilxen. MIT License.
 //
 import SwiftUI
 import SwiftData
@@ -18,7 +18,7 @@ func voiceName(_ id: String) -> String {
     }
 }
 
-func genderToSting(_ gender: AVSpeechSynthesisVoiceGender) -> String {
+func genderToString(_ gender: AVSpeechSynthesisVoiceGender) -> String {
     switch gender {
     case .female: return "female"
     case .male: return "male"

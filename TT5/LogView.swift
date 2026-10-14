@@ -2,7 +2,7 @@
 //  LogView.swift
 //  TT5
 //
-//  Created by Hilxen on 3/31/25.
+//  Copyright (c) Hilxen. MIT License.
 //
 
 import SwiftUI

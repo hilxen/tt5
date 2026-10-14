@@ -2,7 +2,7 @@
 //  TwitchIRC.swift
 //  TT5
 //
-//  Created by Hilxen on 12/14/24.
+//  Copyright (c) Hilxen. MIT License.
 //
 import SwiftUI
 import TwitchIRC

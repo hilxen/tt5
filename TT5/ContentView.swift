@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  TT5
 //
-//  Created by Hilxen on 12/1/24.
+//  Copyright (c) Hilxen. MIT License.
 //
 
 import SwiftUI
@@ -175,7 +175,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
         let currentTime = Int(CFAbsoluteTimeGetCurrent())
         if currentTime - model.lastHeartbeat > 60 {
             model.lastHeartbeat = currentTime
-            print("****** Reconnnecting...")
+            print("****** Reconnecting...")
             twitchIRC.disconnect()
         }
         checkNeedRefresh()

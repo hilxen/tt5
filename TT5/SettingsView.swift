@@ -2,7 +2,7 @@
 //  SettingsView.swift
 //  TT5
 //
-//  Created by Hilxen on 12/9/24.
+//  Copyright (c) Hilxen. MIT License.
 //
 import SwiftUI
 import SwiftData
@@ -397,7 +397,7 @@ struct SettingsView: View {
                 added[voice.language] = language
             }
             if !language!.voiceIds.contains(where: {$0.id == voice.identifier}) {
-                language!.voiceIds.append(VoiceId(id: voice.identifier, gender: genderToSting(voice.gender)))
+                language!.voiceIds.append(VoiceId(id: voice.identifier, gender: genderToString(voice.gender)))
             }
             if language!.femaleVoiceId == nil && voice.gender == .female {
                 language!.femaleVoiceId = voice.identifier
@@ -423,11 +423,11 @@ struct SettingsView: View {
             enabledLanguages = languages.filter { $0.enabled }
         }
         if enabledLanguages.isEmpty {
-            let defaultLanuage = "en-US"
-            var language = languages.first(where: {$0.name == defaultLanuage}) ?? added[defaultLanuage]
+            let defaultLanguage = "en-US"
+            var language = languages.first(where: {$0.name == defaultLanguage}) ?? added[defaultLanguage]
             if language == nil {
                 // No en-US voice installed: still enable it so speech falls back to the system voice
-                language = Language(name: defaultLanuage, enabled: false)
+                language = Language(name: defaultLanguage, enabled: false)
                 modelContext.insert(language!)
             }
             language!.enabled = true

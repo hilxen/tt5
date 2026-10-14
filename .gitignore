@@ -1,6 +1,26 @@
 # Xcode per-user state (breakpoints, scheme order, UI state)
 xcuserdata/
 
+# Xcode build output
+build/
+DerivedData/
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# Personal build settings, see User.template.xcconfig
+Config/User.xcconfig
+
+# App Store branding, kept out of the public repo (see README)
+TT5/Assets.xcassets/AppIconStore.appiconset/
+TT5/Assets.xcassets/LogoStore.imageset/
+
+# Local-only files: design sources, notes
+Private/
+
+# Logs
+*.log
+
 # JetBrains IDE
 .idea/
 *.iml

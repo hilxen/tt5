@@ -1,0 +1,13 @@
+// Shared build settings for all configurations.
+// Personal values (signing team, bundle id, app icon) go in Config/User.xcconfig,
+// which is not under version control. See User.template.xcconfig.
+
+MARKETING_VERSION = 1.6.2
+CURRENT_PROJECT_VERSION = 1
+
+// Defaults: build and run in the simulator without any personal setup
+DEVELOPMENT_TEAM =
+BASE_PRODUCT_BUNDLE_IDENTIFIER = com.example.TT5
+APP_ICON = AppIcon
+
+#include? "User.xcconfig"

@@ -1,8 +1,8 @@
 //
-//  NickView.swift
+//  CustomRewardView.swift
 //  TT5
 //
-//  Created by Hilxen on 12/17/24.
+//  Copyright (c) Hilxen. MIT License.
 //
 
 import SwiftUI

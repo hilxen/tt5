@@ -2,7 +2,7 @@
 //  AudioManager.swift
 //  TT5
 //
-//  Created by Hilxen on 12/7/24.
+//  Copyright (c) Hilxen. MIT License.
 //
 
 import Foundation
@@ -147,13 +147,13 @@ final class AudioManager: NSObject {
         let maxAllowedEmotes = 2
         var result = Array(item.message)
         if item.emotes.count > maxAllowedEmotes {
-            var coutedEmotes = 0
+            var countedEmotes = 0
             for emote in item.emotes {
-                if coutedEmotes >= maxAllowedEmotes {
+                if countedEmotes >= maxAllowedEmotes {
                     result.removeSubrange((emote.start)..<(emote.end + 1))
                     result.insert(contentsOf: Array(String(repeating: " ", count: emote.end - emote.start + 1)), at: emote.start)
                 }
-                coutedEmotes += 1
+                countedEmotes += 1
             }
         }
         return String(result).removeExtraSpaces()

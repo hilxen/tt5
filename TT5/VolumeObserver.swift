@@ -1,3 +1,10 @@
+//
+//  VolumeObserver.swift
+//  TT5
+//
+//  Copyright (c) Hilxen. MIT License.
+//
+
 import Foundation
 import MediaPlayer
 

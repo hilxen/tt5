@@ -2,7 +2,7 @@
 //  TwitchPlayer.swift
 //  TT5
 //
-//  Created by Hilxen on 12/15/24.
+//  Copyright (c) Hilxen. MIT License.
 //
 
 import WebKit
@@ -56,7 +56,7 @@ extension TwitchPlayerWebView {
         var webView: TwitchPlayerWebView?
         private var cancellableRefresh: AnyCancellable?
         private var cancellableMute: AnyCancellable?
-        private var cancellableHearbeat: AnyCancellable?
+        private var cancellableHeartbeat: AnyCancellable?
         
         func observeChangesRefresh(for shouldRefresh: CurrentValueSubject<Bool, Never>) {
             cancellableRefresh = shouldRefresh
@@ -154,8 +154,8 @@ extension TwitchPlayerWebView {
                 }
         }
         
-        func observeChangesHeartbeat(for shouldHearbeat: CurrentValueSubject<Bool, Never>) {
-            cancellableHearbeat = shouldHearbeat
+        func observeChangesHeartbeat(for shouldHeartbeat: CurrentValueSubject<Bool, Never>) {
+            cancellableHeartbeat = shouldHeartbeat
                 .filter { $0 == true }
                 .sink { [weak self] newValue in
                     self?.isVideoMuted()

@@ -2,7 +2,7 @@
 //  NickListView.swift
 //  TT5
 //
-//  Created by Hilxen on 12/19/24.
+//  Copyright (c) Hilxen. MIT License.
 //
 
 import SwiftUI

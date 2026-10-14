@@ -28,7 +28,6 @@
 		E5B9951C2D0522E500BE7865 /* WebSocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B9951B2D0522E500BE7865 /* WebSocketConnection.swift */; };
 		E5B995232D0579CD00BE7865 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B995222D0579CD00BE7865 /* AudioManager.swift */; };
 		E5B995412D06730700BE7865 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B995402D06730700BE7865 /* Settings.swift */; };
-		E5BDE3462F6CC5F00044DEDE /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = E5BDE3452F6CC5F00044DEDE /* Products.storekit */; };
 		E5BDE34A2F6CCC520044DEDE /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5BDE3492F6CCC520044DEDE /* StoreKit.framework */; };
 		E5D977872D081472002A8DE1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5D977862D081467002A8DE1 /* SettingsView.swift */; };
 		E5EEC7FA2D2AF4C700CBFE60 /* ProfilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EEC7F92D2AF4BB00CBFE60 /* ProfilesView.swift */; };
@@ -37,6 +36,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C0F16A000000000000000002 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		C0F16A000000000000000003 /* TT5.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = TT5.xcconfig; sourceTree = "<group>"; };
 		E50996F92D17D994008ED3F5 /* LanguagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguagesView.swift; sourceTree = "<group>"; };
 		E50996FB2D19F30D008ED3F5 /* ChannelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsView.swift; sourceTree = "<group>"; };
 		E50996FD2D1A91FD008ED3F5 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -50,11 +51,9 @@
 		E512C7142E456E9200DDC590 /* CustomRewardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomRewardView.swift; sourceTree = "<group>"; };
 		E528ABF22D9B7EF7003BF82F /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		E5592FC32E0BB23700588AA2 /* VolumeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeObserver.swift; sourceTree = "<group>"; };
-		E57BDB7B2F7B1B670048416C /* support.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = support.html; sourceTree = "<group>"; };
 		E57D6DE42D0E77FA0030CBE6 /* TwitchIRC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwitchIRC.swift; sourceTree = "<group>"; };
 		E57D6DE62D0FA89C0030CBE6 /* TwitchPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwitchPlayer.swift; sourceTree = "<group>"; };
 		E57D6DE82D124A0F0030CBE6 /* NickView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NickView.swift; sourceTree = "<group>"; };
-		E57D6DEC2D1338570030CBE6 /* fearures.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = fearures.txt; sourceTree = "<group>"; };
 		E57D6DEF2D14EDB50030CBE6 /* NickListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NickListView.swift; sourceTree = "<group>"; };
 		E57D6DF12D1513D10030CBE6 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		E5B994FF2D03F3BF00BE7865 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -89,8 +88,7 @@
 		E50E67A42CFCBBE300654252 = {
 			isa = PBXGroup;
 			children = (
-				E57BDB7B2F7B1B670048416C /* support.html */,
-				E57D6DEC2D1338570030CBE6 /* fearures.txt */,
+				C0F16A000000000000000001 /* Config */,
 				E50E67AF2CFCBBE300654252 /* TT5 */,
 				E57D6DDD2D0D501D0030CBE6 /* Frameworks */,
 				E50E67AE2CFCBBE300654252 /* Products */,
@@ -153,6 +151,15 @@
 				E5BDE3492F6CCC520044DEDE /* StoreKit.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C0F16A000000000000000001 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				C0F16A000000000000000002 /* Base.xcconfig */,
+				C0F16A000000000000000003 /* TT5.xcconfig */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -225,7 +232,6 @@
 				E50996FE2D1A91FD008ED3F5 /* LaunchScreen.storyboard in Resources */,
 				E50E67BA2CFCBBE600654252 /* Preview Assets.xcassets in Resources */,
 				E50E67B72CFCBBE600654252 /* Assets.xcassets in Resources */,
-				E5BDE3462F6CC5F00044DEDE /* Products.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,7 +304,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -363,7 +368,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = ;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -388,11 +392,10 @@
 		};
 		E50E67BE2CFCBBE600654252 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C0F16A000000000000000003 /* TT5.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"TT5/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -409,8 +412,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6.2;
-				PRODUCT_BUNDLE_IDENTIFIER = Hilxen.TT5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -424,11 +425,10 @@
 		};
 		E50E67BF2CFCBBE600654252 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C0F16A000000000000000003 /* TT5.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"TT5/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -445,8 +445,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6.2;
-				PRODUCT_BUNDLE_IDENTIFIER = Hilxen.TT5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

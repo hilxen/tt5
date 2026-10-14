@@ -2,7 +2,7 @@
 //  TT5App.swift
 //  TT5
 //
-//  Created by Hilxen on 12/1/24.
+//  Copyright (c) Hilxen. MIT License.
 //
 
 import SwiftUI

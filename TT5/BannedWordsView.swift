@@ -1,8 +1,8 @@
 //
-//  BanwordsView.swift
+//  BannedWordsView.swift
 //  TT5
 //
-//  Created by Hilxen on 1/7/25.
+//  Copyright (c) Hilxen. MIT License.
 //
 
 import SwiftUI
