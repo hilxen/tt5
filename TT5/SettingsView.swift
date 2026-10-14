@@ -212,25 +212,25 @@ struct SettingsView: View {
                 VStack {
                     Toggle(isOn: $mods) {
                         HStack {
-                            Image("mod").resizable().scaledToFit().frame(height: 20)
+                            Image(storeImageName("mod")).resizable().scaledToFit().frame(height: 20)
                             Text("Moderators")
                         }
                     }
                     Toggle(isOn: $vips) {
                         HStack {
-                            Image("vip").resizable().scaledToFit().frame(height: 20)
+                            Image(storeImageName("vip")).resizable().scaledToFit().frame(height: 20)
                             Text("VIPs")
                         }
                     }
                     Toggle(isOn: $subscribers) {
                         HStack {
-                            Image("sub").resizable().scaledToFit().frame(height: 20)
+                            Image(storeImageName("sub")).resizable().scaledToFit().frame(height: 20)
                             Text("Subscribers")
                         }
                     }
                     Toggle(isOn: $broadcaster) {
                         HStack {
-                            Image("own").resizable().scaledToFit().frame(height: 20)
+                            Image(storeImageName("own")).resizable().scaledToFit().frame(height: 20)
                             Text("Channel owner")
                         }
                     }
@@ -242,7 +242,7 @@ struct SettingsView: View {
                     }
                     Toggle(isOn: $customRewards) {
                         HStack {
-                            Image("reward").resizable().scaledToFit().frame(height: 20)
+                            Image(storeImageName("reward")).resizable().scaledToFit().frame(height: 20)
                             Text("Custom rewards")
                         }
                     }

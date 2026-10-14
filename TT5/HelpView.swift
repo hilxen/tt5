@@ -94,8 +94,6 @@ struct HelpView: View {
     @State private var showThanks = false
     let content : AttributedString
     let confirmButtonAction: (() -> Void)?
-    // The App Store logo is kept out of the public repo; fall back to the bundled placeholder
-    private static let logoName = UIImage(named: "LogoStore") != nil ? "LogoStore" : "logo"
 
     init(confirmButtonAction: (() -> Void)? = nil) {
         let path = Bundle.main.path(forResource: "help", ofType: "md")!
@@ -124,7 +122,7 @@ struct HelpView: View {
                 .padding(.all, 10)
             }
             HStack {
-                Image(Self.logoName).resizable().scaledToFit().frame(height: 50)
+                Image(storeImageName("logo")).resizable().scaledToFit().frame(height: 50)
                 Text("TT5 for Twitch \(getAppVersion())").bold().font(.title)
                 Spacer()
             }.padding(.vertical, 5).padding(.horizontal, 10)

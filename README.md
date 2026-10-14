@@ -35,8 +35,9 @@ Requirements: Xcode 26 or later, iOS 17.2 or later.
    Then set `DEVELOPMENT_TEAM` (your Team ID from https://developer.apple.com/account)
    and a unique `BASE_PRODUCT_BUNDLE_IDENTIFIER`.
 
-The repository contains a placeholder app icon. The App Store icon and logo are not part of
-the repository; `APP_ICON` in `Config/User.xcconfig` selects which icon set is used.
+The repository contains placeholder artwork. The App Store app icon, logo and chat role badges
+are not part of the repository: they live in local `*Store` asset sets, which are used when
+present. `APP_ICON` in `Config/User.xcconfig` selects the app icon set.
 
 ## Dependencies
 

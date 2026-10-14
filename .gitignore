@@ -11,9 +11,9 @@ DerivedData/
 # Personal build settings, see User.template.xcconfig
 Config/User.xcconfig
 
-# App Store branding, kept out of the public repo (see README)
-TT5/Assets.xcassets/AppIconStore.appiconset/
-TT5/Assets.xcassets/LogoStore.imageset/
+# App Store artwork (icon, logo, role badges), kept out of the public repo (see README)
+TT5/Assets.xcassets/*Store.appiconset/
+TT5/Assets.xcassets/*Store.imageset/
 
 # Local-only files: design sources, notes
 Private/

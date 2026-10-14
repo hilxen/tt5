@@ -306,7 +306,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                                     VStack(alignment: .leading, spacing: 0) {
                                         HStack(spacing: 1) {
                                             ForEach(getIcons(item, copyOfSettings!), id: \.self) { icon in
-                                                Image(icon)
+                                                Image(storeImageName(icon))
                                                     .resizable()
                                                     .scaledToFit()
                                                     .frame(height: scale * 0.8)
@@ -320,7 +320,7 @@ struct ContentView: View, TwitchIRCDelegate, AudioManagerDelegate, TwitchPlayerD
                                             Text(item.message).multilineTextAlignment(.leading)
                                         } else {
                                             HStack {
-                                                Image("reward")
+                                                Image(storeImageName("reward"))
                                                     .resizable()
                                                     .scaledToFit()
                                                     .frame(height: scale * 2)
