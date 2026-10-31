@@ -37,7 +37,8 @@ Requirements: Xcode 26 or later, iOS 17.2 or later.
 
 The repository contains placeholder artwork. The App Store app icon, logo and chat role badges
 are not part of the repository: they live in local `*Store` asset sets, which are used when
-present. `APP_ICON` in `Config/User.xcconfig` selects the app icon set.
+present. In `Config/User.xcconfig`, `APP_ICON` selects the app icon set and `LAUNCH_SCREEN`
+selects the launch screen storyboard.
 
 ## Dependencies
 

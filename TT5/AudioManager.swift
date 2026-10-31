@@ -319,7 +319,7 @@ final class AudioManager: NSObject {
             (conversation ? settings.volumeForConversations : settings.volume) ?? settings.volume
         ) + nick.volume!
         if volumeIndex < 0 { volumeIndex = 0 }
-        else if volumeIndex > volumes.endIndex { volumeIndex = volumes.endIndex }
+        else if volumeIndex >= volumes.count { volumeIndex = volumes.count - 1 }
         let nickRate = (conversation ? settings.rateForConversations : nick.rate) ?? nick.rate!
         let nickPitch = (conversation ? settings.pitchForConversations : nick.pitch) ?? nick.pitch!
         let ssmlRate = Rate.ssml(rawValue: nickRate)
@@ -335,7 +335,7 @@ final class AudioManager: NSObject {
         let needsExtraPriming = isBluetoothRoute && (outputLatency > 0.7 || timeSinceLastSpeech > 10)
         let primingBreak = needsExtraPriming ? "<break time='1.5s'/>" : "<break time='0.8s'/>"
         
-        let ssml = "<speak>\(primingBreak)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName())</prosody><break/>\(customRewardProsody)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
+        let ssml = "<speak>\(primingBreak)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(nick.pronunciationOfName().escapedForXML())</prosody><break/>\(customRewardProsody)<prosody volume='\(ssmlVolume)' pitch='\(ssmlPitch)' rate='\(ssmlRate)'>\(cleanedText.escapedForXML())</prosody></speak>"
         log?.print(ssml)
 
         let nickVoice = (conversation ? settings.voiceForConversations : nick.voice) ?? nick.voice!
@@ -373,7 +373,10 @@ final class AudioManager: NSObject {
     
     func speak(item: Item, voiceId: String, ssml: String) {
         activateSession()
-        let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
+        guard let utterance = AVSpeechUtterance(ssmlRepresentation: ssml) else {
+            log?.print("invalid SSML", ssml)
+            return
+        }
         utterance.voice = AVSpeechSynthesisVoice(identifier: voiceId)
         utterancesLock.lock()
         utterances[utterance] = item
@@ -397,7 +400,7 @@ final class AudioManager: NSObject {
     func announce(settings: Settings, text: String, voiceId: String? = nil) {
         var volumeIndex = settings.volume
         if volumeIndex < 0 { volumeIndex = 0 }
-        else if volumeIndex > volumes.endIndex { volumeIndex = volumes.endIndex }
+        else if volumeIndex >= volumes.count { volumeIndex = volumes.count - 1 }
 
         let ssmlRate = Rate.ssml(rawValue: settings.rate)
         let ssmlPitch = Pitch.fromRawValue(rawValue: settings.pitch).ssml()
@@ -408,7 +411,10 @@ final class AudioManager: NSObject {
 
         activateSession()
         let useVoiceId = voiceId ?? speechTools.voices.values.first?[settings.voice] ?? "com.apple.voice.compact.en-US.Samantha"
-        let utterance = AVSpeechUtterance(ssmlRepresentation: ssml)!
+        guard let utterance = AVSpeechUtterance(ssmlRepresentation: ssml) else {
+            log?.print("invalid SSML", ssml)
+            return
+        }
         utterance.voice = AVSpeechSynthesisVoice(identifier: useVoiceId)
         speechTools.synthesizer.speak(utterance)
     }
