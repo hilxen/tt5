@@ -12,3 +12,6 @@ BASE_PRODUCT_BUNDLE_IDENTIFIER = com.example.TT5
 
 // App icon set in TT5/Assets.xcassets. 'AppIcon' is the bundled placeholder.
 APP_ICON = AppIcon
+
+// Launch screen storyboard. 'LaunchScreen' shows the bundled placeholder logo.
+LAUNCH_SCREEN = LaunchScreen

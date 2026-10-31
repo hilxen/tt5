@@ -23,6 +23,9 @@ The app can be put into the background, so you can run other streaming apps like
 - Customize nick's pronunciation
 - Announce custom rewards
 
+**New in version 1.7**
+- TT5 is now open source: [github.com/hilxen/tt5](https://github.com/hilxen/tt5)
+
 **New in version 1.6**
 - iOS 27 support
 - various fixes
@@ -64,3 +67,7 @@ The app is provided **FREE** of charge, but any help will be appreciated. Subscr
 - Telegram
   - Channel & chat [t.me/hilxens](https://t.me/hilxens)
   - Private message [t.me/hilxen](https://t.me/hilxen)
+
+**Open source**
+
+TT5 is open source under the MIT License. Source code, issues and contributions: [github.com/hilxen/tt5](https://github.com/hilxen/tt5)
