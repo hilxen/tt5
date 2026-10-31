@@ -1,0 +1,17 @@
+name: Feature request
+description: Suggest an idea for TT5
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: Describe the problem or situation, for example while streaming or watching.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could TT5 help?
+    validations:
+      required: true

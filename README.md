@@ -50,6 +50,10 @@ selects the launch screen storyboard.
 - Telegram: [t.me/hilxen](https://t.me/hilxen)
 - Twitch: [twitch.tv/hilxen](https://www.twitch.tv/hilxen)
 
+## Contributing
+
+Issues and pull requests are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
 [MIT](LICENSE)
